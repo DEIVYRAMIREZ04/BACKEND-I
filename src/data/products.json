@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1756083340345",
+    "title": "Llanta para moto scooter",
+    "description": "Llanta 80/90-14 de alta durabilidad para scooter",
+    "code": "LL-SCOOT-001",
+    "price": 220000,
+    "status": true,
+    "stock": 15,
+    "category": "llantas",
+    "thumbnails": [
+      "llanta-scooter.jpg"
+    ]
+  },
+  {
+    "id": "1756084102214",
+    "title": "Llanta para moto Enduro",
+    "description": "Llanta 120/90-18 dise�ada para terrenos dif�ciles y alta resistencia",
+    "code": "LL-ENDURO-001",
+    "price": 350000,
+    "status": true,
+    "stock": 10,
+    "category": "llantas",
+    "thumbnails": [
+      "llanta-enduro.jpg"
+    ]
+  }
+]
