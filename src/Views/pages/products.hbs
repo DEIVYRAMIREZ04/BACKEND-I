@@ -1,0 +1,20 @@
+<h1>Lista de Productos</h1>
+
+<ul class="pro">
+  {{#each products}}
+    <li>
+      <h3>{{title}}</h3>
+      <p>{{description}}</p>
+      <p>Precio: ${{price}}</p>
+      <p>Código: {{code}}</p>
+      <p>Stock: {{stock}}</p>
+      <p>Categoría: {{category}}</p>
+     {{#if (first thumbnails)}}
+  <img src="/{{first thumbnails}}" alt="{{title}}" width="200">
+{{else}}
+  <p><em>Sin imagen</em></p>
+{{/if}}
+    </li>
+  {{/each}}
+  <link rel="stylesheet" href="/static/css/products.css" />
+</ul>

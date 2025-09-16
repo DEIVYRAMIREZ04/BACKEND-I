@@ -1,0 +1,86 @@
+<h1>Productos en Tiempo Real</h1>
+
+<form id="productForm" action="/api/products" method="POST" enctype="multipart/form-data">
+  <input type="text" name="title" placeholder="Título" required />
+  <input type="text" name="description" placeholder="Descripción" />
+  <input type="text" name="code" placeholder="Código" required />
+  <input type="number" name="price" placeholder="Precio" required />
+  <input type="number" name="stock" placeholder="Stock" required />
+  <input type="text" name="category" placeholder="Categoría" />
+  <input type="file" name="imagen" />
+  <button type="submit">Agregar producto</button>
+</form>
+
+<ul id="productList">
+  {{#each products}}
+    <li data-id="{{id}}">
+      <h3>{{title}}</h3>
+      <p>{{description}}</p>
+      <p>Precio: ${{price}}</p>
+      <p>Código: {{code}}</p>
+      <p>Stock: {{stock}}</p>
+      <p>Categoría: {{category}}</p>
+      {{#if thumbnails.[0]}}
+        <img src="{{thumbnails.[0]}}" alt="{{title}}" width="150">
+      {{else}}
+        <em>Sin imagen</em>
+      {{/if}}
+      <button class="deleteBtn" onclick="deleteProduct('{{id}}')">Eliminar</button>
+    </li>
+  {{/each}}
+</ul>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const productsList = document.getElementById("productList");
+  const productForm = document.getElementById("productForm");
+
+  // Función para eliminar producto
+  function deleteProduct(id) {
+    socket.emit("deleteProduct", id);
+  }
+
+  // Renderizar productos recibidos vía socket (actualizaciones en tiempo real)
+  socket.on("updateProducts", (products) => {
+    productsList.innerHTML = "";
+    products.forEach(p => {
+      const li = document.createElement("li");
+      li.setAttribute("data-id", p.id);
+      li.innerHTML = `
+        <h3>${p.title}</h3>
+        <p>${p.description}</p>
+        <p>Precio: $${p.price}</p>
+        <p>Código: ${p.code}</p>
+        <p>Stock: ${p.stock}</p>
+        <p>Categoría: ${p.category}</p>
+        ${p.thumbnails && p.thumbnails[0] ? `<img src="${p.thumbnails[0]}" alt="${p.title}" width="150">` : "<em>Sin imagen</em>"}
+        <button class="deleteBtn" onclick="deleteProduct('${p.id}')">Eliminar</button>
+      `;
+      productsList.appendChild(li);
+    });
+  });
+
+  // Enviar nuevo producto
+  productForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(productForm);
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        console.log("✅ Producto agregado:", data);
+        productForm.reset();
+      } else {
+        console.error("❌ Error al agregar producto:", data);
+      }
+    } catch (err) {
+      console.error("💥 Error en fetch:", err);
+    }
+  });
+</script>

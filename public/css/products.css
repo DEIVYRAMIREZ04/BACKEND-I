@@ -1,0 +1,56 @@
+.pro {
+  background-color: #073864;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap; /* Permite que los elementos bajen de línea en pantallas pequeñas */
+  padding: 20px;
+}
+
+#productsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+}
+
+#productsList li {
+  border: 1px solid #0077b6;
+  border-radius: 10px;
+  padding: 12px;
+  background: #caf0f8;
+  list-style: none;
+  flex: 1 1 250px; /* Flex-grow, flex-shrink, base width */
+  max-width: 300px; /* Limita el tamaño máximo de cada tarjeta */
+  box-sizing: border-box;
+}
+
+#productsList button {
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#productsList button:hover {
+  background: #023e8a;
+}
+
+/* Responsive: ajustes para móviles */
+@media screen and (max-width: 768px) {
+  .pro {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #productsList li {
+    flex: 1 1 90%; /* Ocupa casi todo el ancho en móviles */
+    max-width: none;
+  }
+}

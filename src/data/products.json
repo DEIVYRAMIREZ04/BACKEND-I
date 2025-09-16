@@ -9,20 +9,33 @@
     "stock": 15,
     "category": "llantas",
     "thumbnails": [
-      "llanta-scooter.jpg"
+      "uploads/nmax.png"
     ]
   },
   {
     "id": "1756084102214",
     "title": "Llanta para moto Enduro",
-    "description": "Llanta 120/90-18 dise�ada para terrenos dif�ciles y alta resistencia",
+    "description": "Llanta 120/90-18 diseñada para terrenos dificiles y alta resistencia",
     "code": "LL-ENDURO-001",
     "price": 350000,
     "status": true,
     "stock": 10,
     "category": "llantas",
     "thumbnails": [
-      "llanta-enduro.jpg"
+      "uploads/xtz.png"
+    ]
+  },
+  {
+    "id": "1757983525256",
+    "title": "hsnvsnh",
+    "description": "ddd",
+    "code": "ee",
+    "price": 444,
+    "status": false,
+    "stock": 44,
+    "category": "llantas",
+    "thumbnails": [
+      "/uploads/img-1757983525194-flex.png"
     ]
   }
 ]

@@ -1,0 +1,36 @@
+/* Navbar base */
+.main-nav {
+  background-color: #0077b6;
+  padding: 10px 20px;
+}
+
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 20px;
+  align-items: center;
+}
+
+.main-nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 6px 10px;
+  transition: background 0.3s, color 0.3s;
+  border-radius: 5px;
+}
+
+.main-nav ul li a:hover {
+  background-color: #023e8a;
+  color: #caf0f8;
+}
+
+/* Responsive: menú vertical en pantallas pequeñas */
+@media screen and (max-width: 768px) {
+  .main-nav ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
