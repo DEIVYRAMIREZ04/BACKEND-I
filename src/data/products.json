@@ -9,7 +9,7 @@
     "stock": 15,
     "category": "llantas",
     "thumbnails": [
-      "uploads/nmax.png"
+      "/uploads/nmax.png"
     ]
   },
   {
@@ -22,20 +22,7 @@
     "stock": 10,
     "category": "llantas",
     "thumbnails": [
-      "uploads/xtz.png"
-    ]
-  },
-  {
-    "id": "1757983525256",
-    "title": "hsnvsnh",
-    "description": "ddd",
-    "code": "ee",
-    "price": 444,
-    "status": false,
-    "stock": 44,
-    "category": "llantas",
-    "thumbnails": [
-      "/uploads/img-1757983525194-flex.png"
+      "/uploads/xtz.png"
     ]
   }
 ]

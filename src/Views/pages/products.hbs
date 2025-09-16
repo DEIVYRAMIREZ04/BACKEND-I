@@ -9,8 +9,8 @@
       <p>Código: {{code}}</p>
       <p>Stock: {{stock}}</p>
       <p>Categoría: {{category}}</p>
-     {{#if (first thumbnails)}}
-  <img src="/{{first thumbnails}}" alt="{{title}}" width="200">
+     {{#if thumbnails.[0]}}
+  <img src="{{thumbnails.[0]}}" alt="{{title}}" width="200">
 {{else}}
   <p><em>Sin imagen</em></p>
 {{/if}}
