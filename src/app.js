@@ -6,6 +6,8 @@ const productsRouter = require("./routes/product.router");
 const cartsRouter = require("./routes/cart.router");
 const { paths } = require("./config/config");
 const ProductManager = require("./managers/ProductManager");
+const mongoose = require("mongoose");
+require("dotenv").config(); 
 
 const app = express();
 const httpServer = createServer(app);
@@ -14,8 +16,15 @@ const io = new Server(httpServer);
 const productManager = new ProductManager();
 const PORT = process.env.PORT || 8080;
 
+//cart
+
+const methodOverride = require("method-override");
+app.use(methodOverride("_method"));
+
 // --- Handlebars
 const handlebars = require("express-handlebars");
+const { Mongoose } = require("mongoose");
+const { config } = require("dotenv");
 app.engine(
   "hbs",
   handlebars.engine({
@@ -28,7 +37,12 @@ app.engine(
   })
 );
 app.set("view engine", "hbs");
-app.set("views", paths.views);
+app.set("views", paths.views); 
+
+// ---Mongoose
+mongoose.connect(process.env.MONGO_URI) 
+  .then(() => console.log("Conectado a MongoDB Atlas"))
+  .catch((err) => console.error("Error al conectar a MongoDB:", err));
 
 // --- Middlewares
 app.use(express.json());
@@ -58,9 +72,9 @@ app.get("/realtimeproducts", async (req, res) => {
 
 // --- Socket.IO
 io.on("connection", (socket) => {
-  console.log("🟢 Cliente conectado");
+  console.log(" Cliente conectado");
 
-  // 🔥 Solo un listener para eliminar
+  //Solo un listener para eliminar
   socket.on("deleteProduct", async (id) => {
     await productManager.deleteProduct(id);
     io.emit("updateProducts", await productManager.getProducts());
@@ -69,5 +83,5 @@ io.on("connection", (socket) => {
 
 // --- Server ON
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

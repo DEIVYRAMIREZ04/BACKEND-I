@@ -1,9 +1,8 @@
 const { Router } = require("express");
-const ProductManager = require("../managers/ProductManager");
+const productController = require("../controllers/productController");
 const multer = require("multer");
 
 const router = Router();
-const productManager = new ProductManager();
 
 // --- multer config
 const storage = multer.diskStorage({
@@ -15,68 +14,27 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- GET /
-router.get("/", async (req, res) => {
-  const products = await productManager.getProducts();
-  res.render("pages/home", { products });
-});
+// --- RUTAS delegando al controller
 
-// --- GET /view
-router.get("/view", async (req, res) => {
-  const products = await productManager.getProducts();
-  res.render("pages/products", { products });
-});
+// Home (ejemplo landing page con productos destacados)
+router.get("/home", productController.getHome);
 
-// --- GET /:pid
-router.get("/:pid", async (req, res) => {
-  const product = await productManager.getProductById(req.params.pid);
-  if (!product) return res.status(404).json({ error: "Producto no encontrado" });
-  res.json(product);
-});
+// Vista con todos los productos (render handlebars)
+router.get("/view", productController.getAllProductsView);
 
-// --- POST /
-router.post("/", upload.single("imagen"), async (req, res) => {
-  try {
-    const { title, description, code, price, status, stock, category } = req.body;
+// API JSON con paginación, filtros y orden
+router.get("/", productController.getAllProductsApi);
 
-    const newProduct = {
-      title,
-      description,
-      code,
-      price: parseFloat(price),
-      status: status === "true",
-      stock: parseInt(stock),
-      category,
-      thumbnails: [`/uploads/${req.file.filename}`]
-    };
+// Obtener producto por ID
+router.get("/:id", productController.getProductById);
 
-    const saved = await productManager.addProduct(newProduct);
+// Crear producto (con imagen)
+router.post("/", upload.single("imagen"), productController.createProduct);
 
-    // avisamos a todos los sockets
-    req.app.get("io").emit("updateProducts", await productManager.getProducts());
+// Actualizar producto
+router.put("/:id", productController.updateProduct);
 
-    res.status(201).json(saved);
-  } catch (err) {
-    console.error("❌ Error al crear:", err);
-    res.status(500).json({ error: "Error al crear producto" });
-  }
-});
-
-// --- PUT /:pid
-router.put("/:pid", async (req, res) => {
-  const updated = await productManager.updateProduct(req.params.pid, req.body);
-  if (!updated) return res.status(404).json({ error: "Producto no encontrado" });
-  res.json(updated);
-});
-
-// --- DELETE /:pid
-router.delete("/:pid", async (req, res) => {
-  const deleted = await productManager.deleteProduct(req.params.pid);
-
-  if (!deleted) return res.status(404).json({ error: "Producto no encontrado" });
-
-  req.app.get("io").emit("updateProducts", await productManager.getProducts());
-  res.json({ success: true });
-});
+// Eliminar producto
+router.delete("/:id", productController.deleteProduct);
 
 module.exports = router;

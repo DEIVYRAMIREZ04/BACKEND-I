@@ -1,56 +1,25 @@
-const fs = require("fs").promises;
-const path = require("path");
+const Product = require("../models/product.model"); // importamos tu modelo "llanta"
 
 class ProductManager {
-  constructor() {
-    this.filePath = path.join(__dirname, "../data/products.json");
-  }
-
-  async #readFile() {
-    try {
-      const data = await fs.readFile(this.filePath, "utf-8");
-      return JSON.parse(data);
-    } catch {
-      return [];
-    }
-  }
-
-  async #writeFile(data) {
-    await fs.writeFile(this.filePath, JSON.stringify(data, null, 2));
-  }
-
   async getProducts() {
-    return await this.#readFile();
+    return await Product.find();
   }
 
   async getProductById(id) {
-    const products = await this.#readFile();
-    return products.find(p => p.id === id);
+    return await Product.findById(id);
   }
 
   async addProduct(product) {
-    const products = await this.#readFile();
-    const newProduct = { id: Date.now().toString(), ...product };
-    products.push(newProduct);
-    await this.#writeFile(products);
-    return newProduct;
+    const newProduct = new Product(product);
+    return await newProduct.save();
   }
 
   async updateProduct(id, fields) {
-    const products = await this.#readFile();
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return null;
-    products[index] = { ...products[index], ...fields, id }; // id no se cambia
-    await this.#writeFile(products);
-    return products[index];
+    return await Product.findByIdAndUpdate(id, fields, { new: true });
   }
 
   async deleteProduct(id) {
-    const products = await this.#readFile();
-    const filtered = products.filter(p => p.id !== id);
-    if (products.length === filtered.length) return false;
-    await this.#writeFile(filtered);
-    return true;
+    return await Product.findByIdAndDelete(id);
   }
 }
 

@@ -1,30 +1,32 @@
 const { Router } = require("express");
-const CartManager = require("../managers/CartManager");
+const cartController = require("../controllers/cartController");
 
 const router = Router();
-const cartManager = new CartManager();
 
-// POST /
-router.post("/", async (req, res) => {
-  const newCart = await cartManager.createCart();
-  res.status(201).json(newCart);
-});
+// Vista renderizada del carrito
+router.get("/:cid/view", cartController.getCartByIdView);
 
-// GET /:cid
-router.get("/:cid", async (req, res) => {
-  const cart = await cartManager.getCartById(req.params.cid);
-  if (!cart) return res.status(404).json({ error: "Carrito no encontrado" });
-  res.json(cart.products);
-});
+// API REST
 
-// POST /:cid/product/:pid
-router.post("/:cid/product/:pid", async (req, res) => {
-  const updatedCart = await cartManager.addProductToCart(
-    req.params.cid,
-    req.params.pid
-  );
-  if (!updatedCart) return res.status(404).json({ error: "Carrito no encontrado" });
-  res.json(updatedCart);
-});
+// POST /api/carts -> crear carrito
+router.post("/", cartController.createCart);
+
+// GET /api/carts/:cid -> obtener carrito con populate
+router.get("/:cid", cartController.getCart);
+
+// POST /api/carts/:cid/product/:pid -> agregar producto al carrito
+router.post("/:cid/product/:pid", cartController.addProductToCart);
+
+// DELETE /api/carts/:cid/products/:pid -> eliminar un producto específico
+router.delete("/:cid/products/:pid", cartController.deleteProductFromCart);
+
+// PUT /api/carts/:cid -> reemplazar todos los productos
+router.put("/:cid", cartController.replaceCartProducts);
+
+// PUT /api/carts/:cid/products/:pid -> actualizar cantidad de producto
+router.put("/:cid/products/:pid", cartController.updateProductQuantity);
+
+// DELETE /api/carts/:cid -> vaciar carrito
+router.delete("/:cid", cartController.clearCart);
 
 module.exports = router;

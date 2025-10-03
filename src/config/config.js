@@ -1,6 +1,7 @@
 const path = require("path");
 require("dotenv").config();
 
+const MONGO_URI = process.env.MONGO_URI;
 module.exports = {
   PORT: process.env.PORT || 8080,
   paths: {
