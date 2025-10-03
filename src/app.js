@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const path = require("path");
 const productsRouter = require("./routes/product.router");
 const cartsRouter = require("./routes/cart.router");
-const { paths } = require("./config/config");
+const { MONGO_URI,paths } = require("./config/config");
 const ProductManager = require("./managers/ProductManager");
 const mongoose = require("mongoose");
 require("dotenv").config(); 
@@ -15,6 +15,7 @@ const io = new Server(httpServer);
 
 const productManager = new ProductManager();
 const PORT = process.env.PORT || 8080;
+
 
 //cart
 
@@ -33,6 +34,12 @@ app.engine(
     helpers: {
       year: () => new Date().getFullYear(),
       first: (arr) => (arr && arr.length > 0 ? arr[0] : null),
+      firstThumbnail: (thumbnails) => {
+      if (thumbnails && thumbnails.length > 0) {
+        return thumbnails[0];
+      }
+      return '/uploads/no-image.png';
+    }
     },
   })
 );
@@ -40,7 +47,7 @@ app.set("view engine", "hbs");
 app.set("views", paths.views); 
 
 // ---Mongoose
-mongoose.connect(process.env.MONGO_URI) 
+mongoose.connect(MONGO_URI) 
   .then(() => console.log("Conectado a MongoDB Atlas"))
   .catch((err) => console.error("Error al conectar a MongoDB:", err));
 

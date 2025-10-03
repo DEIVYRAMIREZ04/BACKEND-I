@@ -47,14 +47,14 @@ class ProductController {
     const nextPage = hasNextPage ? page + 1 : null;
 
     res.render("pages/products", {
-      products:products.docs,
-      page,
-      totalPages,
-      hasPrevPage,
-      hasNextPage,
-      prevPage,
-      nextPage,
-    });
+  products: products.docs,   // 👈 aquí solo los docs
+  page: products.page,
+  totalPages: products.totalPages,
+  hasPrevPage: products.hasPrevPage,
+  hasNextPage: products.hasNextPage,
+  prevPage: products.prevPage,
+  nextPage: products.nextPage,
+});
   } catch (err) {
     console.error("Error cargando productos view:", err);
     res.status(500).send("Error al cargar productos");

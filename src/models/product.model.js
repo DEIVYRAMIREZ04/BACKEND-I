@@ -20,6 +20,6 @@ kingProductsSchema.plugin(mongoosePaginate);
 
 const Product =
   mongoose.models.Product ||
-  mongoose.model("Product", kingProductsSchema);
+  mongoose.model("llantas", kingProductsSchema);
 
 module.exports = Product;
