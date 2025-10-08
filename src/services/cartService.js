@@ -1,6 +1,11 @@
 const Cart = require("../models/cart.model"); // 👈 tu esquema mongoose
 
 class CartService {
+  async getAnyCart() {
+  const cart = await Cart.findOne();
+  return cart;
+}
+
   async createCart() {
     const newCart = new Cart({ products: [] });
     return await newCart.save();

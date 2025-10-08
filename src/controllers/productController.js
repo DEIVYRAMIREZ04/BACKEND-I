@@ -1,11 +1,28 @@
 const productService = require("../services/productService");
 const querystring = require("querystring");
+const cartService = require("../services/cartService");
 
 class ProductController {
   async getHome(req, res) {
-    const products = await productService.getAllProducts();
-    res.render("pages/home", { products });
+    try {
+      // Obtener los productos
+      const products = await productService.getAllProducts();
+
+      // Crear un carrito nuevo automáticamente al entrar
+      const cart = await cartService.createCart();
+
+      // Renderizar la vista y pasar el cartId
+      res.render("pages/home", {
+        title: "Inicio - King Llantas",
+        products,
+        cartId: cart._id, // 👈 se pasa el id del carrito
+      });
+    } catch (error) {
+      console.error("Error al renderizar home:", error);
+      res.status(500).send("Error interno del servidor");
+    }
   }
+
 
  async getAllProductsView(req, res) {
   try {
@@ -46,15 +63,17 @@ class ProductController {
     const prevPage = hasPrevPage ? page - 1 : null;
     const nextPage = hasNextPage ? page + 1 : null;
 
-    res.render("pages/products", {
-  products: products.docs,   // 👈 aquí solo los docs
+   res.render("pages/products", {
+  products: products.docs,   // 👈 productos de la página actual
   page: products.page,
   totalPages: products.totalPages,
   hasPrevPage: products.hasPrevPage,
   hasNextPage: products.hasNextPage,
   prevPage: products.prevPage,
   nextPage: products.nextPage,
+  cartId: req.app.locals.cartId || null,  // 👈 NUEVO: id del carrito global
 });
+
   } catch (err) {
     console.error("Error cargando productos view:", err);
     res.status(500).send("Error al cargar productos");

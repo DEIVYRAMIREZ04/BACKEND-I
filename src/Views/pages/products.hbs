@@ -9,22 +9,21 @@
       <p><strong>Categoría:</strong> {{this.category}}</p>
       <p><strong>Stock:</strong> {{this.stock}}</p>
 
-     {{#if this.thumbnails}}
-  {{#if this.thumbnails.length}}
-    <img src="{{this.thumbnails.[0]}}" alt="{{this.title}}" width="150" />
-  {{else}}
-    <img src="/uploads/no-image.png" alt="Sin imagen" width="150" />
-  {{/if}}
-{{else}}
-  <img src="/uploads/no-image.png" alt="Sin imagen" width="150" />
-{{/if}}
-
+      {{#if this.thumbnails}}
+        {{#if this.thumbnails.length}}
+          <img src="{{this.thumbnails.[0]}}" alt="{{this.title}}" width="150" />
+        {{else}}
+          <img src="/uploads/no-image.png" alt="Sin imagen" width="150" />
+        {{/if}}
+      {{else}}
+        <img src="/uploads/no-image.png" alt="Sin imagen" width="150" />
+      {{/if}}
 
       <!-- Botón agregar al carrito -->
-      
-      <form action="/api/carts/{{cartId}}/products/{{this._id}}" method="post">
-        <button type="button" data-product-id="{{this._id}}">Agregar al carrito</button>
-      </form>
+
+      <form action="/api/carts/{{#if cartId}}{{cartId}}{{else}}0{{/if}}/product/{{this._id}}" method="post">
+  <button type="submit">Agregar al carrito</button>
+</form>
     </div>
   {{/each}}
 </div>
@@ -43,44 +42,13 @@
 </div>
 
 <style>
-  .products-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-  }
-  .product-card {
-    border: 1px solid #0077b6;
-    border-radius: 10px;
-    padding: 15px;
-    width: 220px;
-    background: #f8f9fa;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .product-card img {
-    border-radius: 8px;
-    margin-bottom: 10px;
-  }
-  .pagination {
-    margin-top: 20px;
-    text-align: center;
-  }
-  .pagination a {
-    margin: 0 10px;
-    text-decoration: none;
-    color: #0077b6;
-    font-weight: bold;
-  }
-
-  /* Responsive */
-  @media (max-width: 600px) {
-    .products-container {
-      flex-direction: column;
-      align-items: center;
-    }
-    .product-card {
-      width: 90%;
-    }
-  }
+  .products-container { display: flex; flex-wrap: wrap; gap: 20px;
+  justify-content: center; } .product-card { border: 1px solid #0077b6;
+  border-radius: 10px; padding: 15px; width: 220px; background: #f8f9fa;
+  text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); } .product-card img
+  { border-radius: 8px; margin-bottom: 10px; } .pagination { margin-top: 20px;
+  text-align: center; } .pagination a { margin: 0 10px; text-decoration: none;
+  color: #0077b6; font-weight: bold; } /* Responsive */ @media (max-width:
+  600px) { .products-container { flex-direction: column; align-items: center; }
+  .product-card { width: 90%; } }
 </style>
