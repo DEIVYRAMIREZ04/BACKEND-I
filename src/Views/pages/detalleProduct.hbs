@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="/css/productDetail.css">
+
+<div class="product-detail">
+  <h1>{{product.title}}</h1>
+
+  <div class="detail-container">
+    <img src="{{product.thumbnails.[0]}}" alt="{{product.title}}" class="product-image">
+
+    <div class="detail-info">
+      <p><strong>Descripción:</strong> {{product.description}}</p>
+      <p><strong>Categoría:</strong> {{product.category}}</p>
+      <p><strong>Precio:</strong> ${{product.price}}</p>
+      <p><strong>Stock:</strong> {{product.stock}}</p>
+      <p><strong>Estado:</strong> 
+        {{#if product.status}}Disponible{{else}}No disponible{{/if}}
+      </p>
+
+      {{#if cartId}}
+        <form action="/api/carts/{{cartId}}/products/{{product._id}}" method="POST">
+          <button type="submit">🛒 Agregar al carrito</button>
+        </form>
+      {{/if}}
+
+      <a href="/">⬅ Volver al inicio</a>
+    </div>
+  </div>
+</div>

@@ -14,27 +14,31 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- RUTAS delegando al controller
+//controlkador de rutas
 
-// Home (ejemplo landing page con productos destacados)
+//Home (ejemplo landing page con productos destacados)
 router.get("/home", productController.getHome);
 
-// Vista con todos los productos (render handlebars)
+//Vista con todos los productos (render handlebars)
 router.get("/view", productController.getAllProductsView);
 
-// API JSON con paginación, filtros y orden
+//API JSON con paginación, filtros y orden
 router.get("/", productController.getAllProductsApi);
 
 // Obtener producto por ID
 router.get("/:id", productController.getProductById);
 
-// Crear producto (con imagen)
+//Crear producto (con imagen)
 router.post("/", upload.single("imagen"), productController.createProduct);
 
 // Actualizar producto
 router.put("/:id", productController.updateProduct);
 
-// Eliminar producto
+//Eliminar producto
 router.delete("/:id", productController.deleteProduct);
+
+//detalle de producto
+router.get("/:id/view", productController.getProductDetailView.bind(productController));
+
 
 module.exports = router;

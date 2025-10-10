@@ -159,6 +159,29 @@ class ProductController {
       return res.status(404).json({ error: "Producto no encontrado" });
     res.json(product);
   }
+  async getProductDetailView(req, res) {
+  try {
+    const { id } = req.params;
+    const product = await productService.getProductById(id);
+
+    if (!product) {
+      return res.status(404).render("pages/error", { message: "Producto no encontrado" });
+    }
+
+    // Si quieres usar el carrito global
+    const cartId = req.app.locals.cartId || null;
+
+    res.render("pages/detalleProduct", {
+      title: product.title,
+      product,
+      cartId,
+    });
+  } catch (error) {
+    console.error("Error al cargar el detalle del producto:", error);
+    res.status(500).render("pages/error", { message: "Error interno del servidor" });
+  }
+}
+
 
   async createProduct(req, res) {
     try {

@@ -19,11 +19,13 @@
         <img src="/uploads/no-image.png" alt="Sin imagen" width="150" />
       {{/if}}
 
+
       <!-- Botón agregar al carrito -->
 
       <form action="/api/carts/{{#if cartId}}{{cartId}}{{else}}0{{/if}}/product/{{this._id}}" method="post">
   <button type="submit">Agregar al carrito</button>
 </form>
+      <a href="/api/products/{{this._id}}/view" class="btn-detail">Ver detalle</a>
     </div>
   {{/each}}
 </div>
