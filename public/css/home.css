@@ -1,0 +1,72 @@
+/* ===============================
+   HERO SECTION - HOME KING LLANTAS (VERSIÓN AJUSTADA)
+   =============================== */
+
+.hero {
+  position: relative;
+  min-height: 70vh; /* menos forzado, más natural */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* Fondo: imagen centrada, sin deformar */
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)),
+    url("/uploads/logo.png") center center no-repeat;
+  background-size: contain; /* mantiene proporción */
+  background-color: #000; /* relleno elegante */
+  color: #fff;
+  padding: 60px 20px;
+  overflow: hidden;
+}
+
+/* === TÍTULO PRINCIPAL === */
+.hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffcc00;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px #ffcc00, 0 0 15px #ff9900;
+}
+
+/* === SUBTÍTULO === */
+.hero p {
+  font-size: 1.4rem;
+  color: #f5f5f5;
+  margin-top: 15px;
+  letter-spacing: 1px;
+  font-weight: 400;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .hero {
+    min-height: 60vh;
+    background-size: cover; /* en pantallas pequeñas sí cubre */
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 55vh;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+}

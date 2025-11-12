@@ -3,93 +3,32 @@ const querystring = require("querystring");
 const cartService = require("../services/cartService");
 
 class ProductController {
+  // 🏠 Obtener productos y crear carrito automáticamente
   async getHome(req, res) {
     try {
-      // Obtener los productos
       const products = await productService.getAllProducts();
-
-      // Crear un carrito nuevo automáticamente al entrar
       const cart = await cartService.createCart();
 
-      // Renderizar la vista y pasar el cartId
-      res.render("pages/home", {
-        title: "Inicio - King Llantas",
-        products,
-        cartId: cart._id, // 👈 se pasa el id del carrito
+      res.json({
+        status: "success",
+        message: "Inicio cargado correctamente",
+        payload: {
+          cartId: cart._id,
+          products
+        }
       });
     } catch (error) {
-      console.error("Error al renderizar home:", error);
-      res.status(500).send("Error interno del servidor");
+      console.error("Error al cargar home:", error);
+      res.status(500).json({ status: "error", message: "Error interno del servidor" });
     }
   }
 
-
- async getAllProductsView(req, res) {
-  try {
-    let { limit = 10, page = 1, sort, query } = req.query;
-    limit = parseInt(limit) || 10;
-    page = parseInt(page) || 1;
-
-    const filter = {};
-    if (query) {
-      if (query.includes(":")) {
-        const [key, value] = query.split(":");
-        if (key === "category") filter.category = value;
-        else if (key === "status")
-          filter.status = value === "true" || value === "1";
-        else filter[key] = value;
-      } else {
-        filter.$or = [{ category: query }, { title: new RegExp(query, "i") }];
-      }
-    }
-
-    const sortObj = {};
-    if (sort === "asc") sortObj.price = 1;
-    else if (sort === "desc") sortObj.price = -1;
-
-    const total = await productService.countProducts(filter);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-    if (page > totalPages) page = totalPages;
-
-    const products = await productService.getProductsPaginated({
-      filter,
-      sort: sortObj,
-      limit,
-      page,
-    });
-
-    const hasPrevPage = page > 1;
-    const hasNextPage = page < totalPages;
-    const prevPage = hasPrevPage ? page - 1 : null;
-    const nextPage = hasNextPage ? page + 1 : null;
-
-   res.render("pages/products", {
-  products: products.docs,   // 👈 productos de la página actual
-  page: products.page,
-  totalPages: products.totalPages,
-  hasPrevPage: products.hasPrevPage,
-  hasNextPage: products.hasNextPage,
-  prevPage: products.prevPage,
-  nextPage: products.nextPage,
-  cartId: req.app.locals.cartId || null,  // 👈 NUEVO: id del carrito global
-});
-
-  } catch (err) {
-    console.error("Error cargando productos view:", err);
-    res.status(500).send("Error al cargar productos");
-  }
-}
-
-  // GET /api/products con paginación, filtros y orden
-
-
-  async getAllProductsApi(req, res) {
+  // 📄 Obtener productos paginados (vista → JSON)
+  async getAllProductsView(req, res) {
     try {
       let { limit = 10, page = 1, sort, query } = req.query;
       limit = parseInt(limit) || 10;
       page = parseInt(page) || 1;
-
-      // construir filtro dinámico
 
       const filter = {};
       if (query) {
@@ -104,13 +43,67 @@ class ProductController {
         }
       }
 
-      // ordenamiento
-
       const sortObj = {};
       if (sort === "asc") sortObj.price = 1;
       else if (sort === "desc") sortObj.price = -1;
 
-      // pedirle a productService que devuelva paginado
+      const total = await productService.countProducts(filter);
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      if (page > totalPages) page = totalPages;
+
+      const products = await productService.getProductsPaginated({
+        filter,
+        sort: sortObj,
+        limit,
+        page,
+      });
+
+      res.json({
+        status: "success",
+        message: "Productos cargados correctamente",
+        payload: {
+          products: products.docs,
+          page: products.page,
+          totalPages: products.totalPages,
+          hasPrevPage: products.hasPrevPage,
+          hasNextPage: products.hasNextPage,
+          prevPage: products.prevPage,
+          nextPage: products.nextPage,
+          limit,
+          query,
+          sort,
+          cartId: req.app.locals.cartId || null
+        }
+      });
+    } catch (err) {
+      console.error("Error cargando productos:", err);
+      res.status(500).json({ status: "error", message: "Error al cargar productos" });
+    }
+  }
+
+  // 📦 API con paginación
+  async getAllProductsApi(req, res) {
+    try {
+      let { limit = 10, page = 1, sort, query } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 1;
+
+      const filter = {};
+      if (query) {
+        if (query.includes(":")) {
+          const [key, value] = query.split(":");
+          if (key === "category") filter.category = value;
+          else if (key === "status")
+            filter.status = value === "true" || value === "1";
+          else filter[key] = value;
+        } else {
+          filter.$or = [{ category: query }, { title: new RegExp(query, "i") }];
+        }
+      }
+
+      const sortObj = {};
+      if (sort === "asc") sortObj.price = 1;
+      else if (sort === "desc") sortObj.price = -1;
 
       const total = await productService.countProducts(filter);
       const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -130,13 +123,12 @@ class ProductController {
 
       const buildLink = (p) => {
         const q = { ...req.query, page: p, limit };
-        return `${req.protocol}://${req.get("host")}${req.baseUrl}${
-          req.path
-        }?${querystring.stringify(q)}`;
+        return `${req.protocol}://${req.get("host")}${req.baseUrl}${req.path}?${querystring.stringify(q)}`;
       };
 
-      return res.json({
+      res.json({
         status: "success",
+        message: "Productos paginados obtenidos correctamente",
         payload: products,
         totalPages,
         prevPage,
@@ -145,48 +137,58 @@ class ProductController {
         hasPrevPage,
         hasNextPage,
         prevLink: hasPrevPage ? buildLink(prevPage) : null,
-        nextLink: hasNextPage ? buildLink(nextPage) : null,
+        nextLink: hasNextPage ? buildLink(nextPage) : null
       });
     } catch (err) {
       console.error("Error en paginación:", err);
-      return res.status(500).json({ status: "error", error: err.message });
+      res.status(500).json({ status: "error", message: err.message });
     }
   }
 
+  // 🔍 Obtener producto por ID
   async getProductById(req, res) {
-    const product = await productService.getProductById(req.params.id);
-    if (!product)
-      return res.status(404).json({ error: "Producto no encontrado" });
-    res.json(product);
-  }
-  async getProductDetailView(req, res) {
-  try {
-    const { id } = req.params;
-    const product = await productService.getProductById(id);
+    try {
+      const product = await productService.getProductById(req.params.id);
+      if (!product)
+        return res.status(404).json({ status: "error", message: "Producto no encontrado" });
 
-    if (!product) {
-      return res.status(404).render("pages/error", { message: "Producto no encontrado" });
+      res.json({ status: "success", payload: product });
+    } catch (err) {
+      console.error("Error al obtener producto:", err);
+      res.status(500).json({ status: "error", message: err.message });
     }
-
-    // Si quieres usar el carrito global
-    const cartId = req.app.locals.cartId || null;
-
-    res.render("pages/detalleProduct", {
-      title: product.title,
-      product,
-      cartId,
-    });
-  } catch (error) {
-    console.error("Error al cargar el detalle del producto:", error);
-    res.status(500).render("pages/error", { message: "Error interno del servidor" });
   }
-}
 
+  // 📖 Detalle de producto (vista → JSON)
+  async getProductDetailView(req, res) {
+    try {
+      const { id } = req.params;
+      const product = await productService.getProductById(id);
 
+      if (!product) {
+        return res.status(404).json({ status: "error", message: "Producto no encontrado" });
+      }
+
+      const cartId = req.app.locals.cartId || null;
+
+      res.json({
+        status: "success",
+        message: "Detalle de producto obtenido correctamente",
+        payload: {
+          product,
+          cartId
+        }
+      });
+    } catch (error) {
+      console.error("Error al cargar detalle del producto:", error);
+      res.status(500).json({ status: "error", message: "Error interno del servidor" });
+    }
+  }
+
+  // ➕ Crear producto
   async createProduct(req, res) {
     try {
-      const { title, description, code, price, status, stock, category } =
-        req.body;
+      const { title, description, code, price, status, stock, category } = req.body;
 
       const newProduct = {
         title,
@@ -201,39 +203,55 @@ class ProductController {
 
       const saved = await productService.createProduct(newProduct);
 
-      // aviso a sockets
+      req.app.get("io").emit("updateProducts", await productService.getAllProducts());
 
-      req.app
-        .get("io")
-        .emit("updateProducts", await productService.getAllProducts());
-
-      res.status(201).json(saved);
+      res.status(201).json({
+        status: "success",
+        message: "Producto creado correctamente",
+        payload: saved
+      });
     } catch (err) {
-      console.error("Error al crear:", err);
-      res.status(500).json({ error: "Error al crear producto" });
+      console.error("Error al crear producto:", err);
+      res.status(500).json({ status: "error", message: "Error al crear producto" });
     }
   }
 
+  // 🔁 Actualizar producto
   async updateProduct(req, res) {
-    const updated = await productService.updateProductById(
-      req.params.id,
-      req.body
-    );
-    if (!updated)
-      return res.status(404).json({ error: "Producto no encontrado" });
-    res.json(updated);
+    try {
+      const updated = await productService.updateProductById(req.params.id, req.body);
+      if (!updated)
+        return res.status(404).json({ status: "error", message: "Producto no encontrado" });
+
+      res.json({
+        status: "success",
+        message: "Producto actualizado correctamente",
+        payload: updated
+      });
+    } catch (err) {
+      console.error("Error al actualizar producto:", err);
+      res.status(500).json({ status: "error", message: err.message });
+    }
   }
 
+  // ❌ Eliminar producto
   async deleteProduct(req, res) {
-    const deleted = await productService.deleteProductById(req.params.id);
+    try {
+      const deleted = await productService.deleteProductById(req.params.id);
+      if (!deleted)
+        return res.status(404).json({ status: "error", message: "Producto no encontrado" });
 
-    if (!deleted)
-      return res.status(404).json({ error: "Producto no encontrado" });
+      req.app.get("io").emit("updateProducts", await productService.getAllProducts());
 
-    req.app
-      .get("io")
-      .emit("updateProducts", await productService.getAllProducts());
-    res.json({ success: true });
+      res.json({
+        status: "success",
+        message: "Producto eliminado correctamente",
+        payload: deleted
+      });
+    } catch (err) {
+      console.error("Error al eliminar producto:", err);
+      res.status(500).json({ status: "error", message: err.message });
+    }
   }
 }
 

@@ -1,5 +1,40 @@
+<link rel="stylesheet" href="/static/css/products.css">
+
+
 <h1>Lista de Productos</h1>
 
+<!-- Filtros y ordenamiento -->
+<div class="filters-container">
+  <form method="GET" action="/api/products/view" class="filters-form">
+    <div class="filter-group">
+      <label for="query">Buscar:</label>
+      <input type="text" id="query" name="query" placeholder="Categoría o nombre..." value="{{query}}">
+    </div>
+
+    <div class="filter-group">
+      <label for="sort">Ordenar por precio:</label>
+      <select id="sort" name="sort">
+        <option value="">Sin ordenar</option>
+        <option value="asc" {{#if (eq sort "asc")}}selected{{/if}}>Menor a Mayor</option>
+        <option value="desc" {{#if (eq sort "desc")}}selected{{/if}}>Mayor a Menor</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="limit">Productos por página:</label>
+      <select id="limit" name="limit">
+        <option value="5" {{#if (eq limit 5)}}selected{{/if}}>5</option>
+        <option value="10" {{#if (eq limit 10)}}selected{{/if}}>10</option>
+        <option value="20" {{#if (eq limit 20)}}selected{{/if}}>20</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-filter">Filtrar</button>
+    <a href="/api/products/view" class="btn-clear">Limpiar</a>
+  </form>
+</div>
+
+<!-- Lista de productos -->
 <div class="products-container">
   {{#each products}}
     <div class="product-card">
@@ -19,13 +54,17 @@
         <img src="/uploads/no-image.png" alt="Sin imagen" width="150" />
       {{/if}}
 
-
       <!-- Botón agregar al carrito -->
-
-      <form action="/api/carts/{{#if cartId}}{{cartId}}{{else}}0{{/if}}/product/{{this._id}}" method="post">
-  <button type="submit">Agregar al carrito</button>
-</form>
-      <a href="/api/products/{{this._id}}/view" class="btn-detail">Ver detalle</a>
+      <div class="product-actions">
+        <form action="/api/carts/{{#if cartId}}{{cartId}}{{else}}0{{/if}}/products/{{this._id}}" method="post" class="add-to-cart-form">
+          <div class="quantity-selector">
+            <label for="quantity-{{this._id}}">Cantidad:</label>
+            <input type="number" id="quantity-{{this._id}}" name="quantity" value="1" min="1" max="{{this.stock}}" class="quantity-input">
+          </div>
+          
+        </form>
+        <a href="/product/{{this._id}}" class="btn-detail">Ver detalle</a>
+      </div>
     </div>
   {{/each}}
 </div>
@@ -33,24 +72,79 @@
 <!-- Paginación -->
 <div class="pagination">
   {{#if hasPrevPage}}
-    <a href="?page={{prevPage}}&limit=10">⬅ Anterior</a>
+    <a href="?page={{prevPage}}&limit={{limit}}{{#if query}}&query={{query}}{{/if}}{{#if sort}}&sort={{sort}}{{/if}}">⬅ Anterior</a>
   {{/if}}
 
   <span>Página {{page}} de {{totalPages}}</span>
 
   {{#if hasNextPage}}
-    <a href="?page={{nextPage}}&limit=10">Siguiente ➡</a>
+    <a href="?page={{nextPage}}&limit={{limit}}{{#if query}}&query={{query}}{{/if}}{{#if sort}}&sort={{sort}}{{/if}}">Siguiente ➡</a>
   {{/if}}
 </div>
 
-<style>
-  .products-container { display: flex; flex-wrap: wrap; gap: 20px;
-  justify-content: center; } .product-card { border: 1px solid #0077b6;
-  border-radius: 10px; padding: 15px; width: 220px; background: #f8f9fa;
-  text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); } .product-card img
-  { border-radius: 8px; margin-bottom: 10px; } .pagination { margin-top: 20px;
-  text-align: center; } .pagination a { margin: 0 10px; text-decoration: none;
-  color: #0077b6; font-weight: bold; } /* Responsive */ @media (max-width:
-  600px) { .products-container { flex-direction: column; align-items: center; }
-  .product-card { width: 90%; } }
-</style>
+<!-- Enlace al CSS -->
+<link rel="stylesheet" href="/css/products.css" />
+
+<!-- JavaScript (se queda dentro del archivo) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Mostrar notificaciones
+  function showNotification(message, type = 'info') {
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) existingNotification.remove();
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
+  // Formularios de agregar al carrito
+  document.querySelectorAll('.add-to-cart-form').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const button = this.querySelector('.btn-add-cart');
+      const productId = button.dataset.productId;
+      const quantity = this.querySelector('.quantity-input').value;
+      button.disabled = true;
+      button.textContent = '⏳ Agregando...';
+      try {
+        const response = await fetch(this.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quantity })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          showNotification(`✅ ${result.message}`, 'success');
+        } else {
+          showNotification(`❌ ${result.message}`, 'error');
+        }
+      } catch (error) {
+        showNotification('❌ Error al agregar producto al carrito', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '🛒 Agregar al carrito';
+      }
+    });
+  });
+
+  // Validar cantidad
+  document.querySelectorAll('.quantity-input').forEach(input => {
+    input.addEventListener('change', function() {
+      const max = parseInt(this.getAttribute('max'));
+      const value = parseInt(this.value);
+      if (value > max) {
+        this.value = max;
+        showNotification(`⚠️ Cantidad máxima: ${max}`, 'info');
+      } else if (value < 1) {
+        this.value = 1;
+      }
+    });
+  });
+});
+</script>

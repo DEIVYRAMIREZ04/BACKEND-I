@@ -1,0 +1,133 @@
+<body>
+  <main>
+    <div class="error-container">
+      <h1 class="error-title">⚠️ Algo salió mal</h1>
+      <p class="error-message">{{message}}</p>
+
+      <div class="buttons">
+        <a href="/" class="btn-home">🏠 Volver al inicio</a>
+        <a href="/products" class="btn-home">🛍️ Ver productos</a>
+        <button id="btnLogout" class="btn-logout">🚪 Cerrar sesión</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      try {
+        await fetch("/logout");
+        window.location.href = "/login";
+      } catch (err) {
+        console.error("Error cerrando sesión:", err);
+        window.location.href = "/login";
+      }
+    });
+  </script>
+
+  <style>
+    /* === Estructura general === */
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: "Poppins", sans-serif;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    /* === Contenedor principal del error === */
+    .error-container {
+      background: #1e1e1e;
+      border: 1px solid #2b2b2b;
+      border-radius: 16px;
+      padding: 2.5rem;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      max-width: 500px;
+      width: 90%;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .error-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #ff4c4c;
+      margin-bottom: 1rem;
+    }
+
+    .error-message {
+      font-size: 1.1rem;
+      color: #dcdcdc;
+      margin-bottom: 2rem;
+    }
+
+    /* === Botones === */
+    .buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-home, .btn-logout {
+      background-color: #333;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.25s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-home:hover {
+      background-color: #555;
+    }
+
+    .btn-logout {
+      background-color: #d32f2f;
+    }
+
+    .btn-logout:hover {
+      background-color: #b71c1c;
+    }
+
+    /* === Animación === */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* === Responsivo === */
+    @media (max-width: 480px) {
+      .buttons {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+
+      .btn-home, .btn-logout {
+        width: 100%;
+      }
+    }
+  </style>
+</body>
+</html>

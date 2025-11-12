@@ -1,27 +1,127 @@
-<link rel="stylesheet" href="/css/productDetail.css">
+<link rel="stylesheet" href="/static/css/detalleProduct.css">
 
 <div class="product-detail">
-  <h1>{{product.title}}</h1>
+  <div class="product-card">
+    <div class="image-container">
+      <img src="{{product.thumbnails.[0]}}" alt="{{product.title}}" class="product-image">
+    </div>
 
-  <div class="detail-container">
-    <img src="{{product.thumbnails.[0]}}" alt="{{product.title}}" class="product-image">
-
-    <div class="detail-info">
-      <p><strong>Descripción:</strong> {{product.description}}</p>
-      <p><strong>Categoría:</strong> {{product.category}}</p>
-      <p><strong>Precio:</strong> ${{product.price}}</p>
-      <p><strong>Stock:</strong> {{product.stock}}</p>
-      <p><strong>Estado:</strong> 
-        {{#if product.status}}Disponible{{else}}No disponible{{/if}}
-      </p>
+    <div class="info-container">
+      <h1 class="product-title">{{product.title}}</h1>
+      <p class="product-description">{{product.description}}</p>
+      
+      <div class="product-meta">
+        <p><strong>Categoría:</strong> {{product.category}}</p>
+        <p><strong>Precio:</strong> ${{product.price}}</p>
+        <p><strong>Stock:</strong> {{product.stock}}</p>
+        <p><strong>Estado:</strong> 
+          <span class="status {{#if product.status}}available{{else}}unavailable{{/if}}">
+            {{#if product.status}}Disponible{{else}}No disponible{{/if}}
+          </span>
+        </p>
+      </div>
 
       {{#if cartId}}
-        <form action="/api/carts/{{cartId}}/products/{{product._id}}" method="POST">
-          <button type="submit">🛒 Agregar al carrito</button>
-        </form>
+        <div class="add-to-cart-section">
+          <form action="/api/carts/{{cartId}}/products/{{product._id}}" method="POST" class="add-cart-form">
+            <div class="quantity-selector">
+              <label for="quantity">Cantidad:</label>
+              <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{product.stock}}" class="quantity-input">
+              <span class="stock-info">(Disponible: {{product.stock}})</span>
+            </div>
+            <button type="submit" class="btn-add" data-product-id="{{product._id}}" data-product-name="{{product.title}}">
+              🛒 Agregar al carrito
+            </button>
+          </form>
+        </div>
       {{/if}}
 
-      <a href="/">⬅ Volver al inicio</a>
+      <a href="/" class="btn-back">⬅ Volver al inicio</a>
     </div>
   </div>
 </div>
+
+<!-- JavaScript para mejorar la UX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Función para mostrar notificaciones
+  function showNotification(message, type = 'info') {
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
+    }, 3000);
+  }
+  
+  // Manejar formulario de agregar al carrito
+  const addCartForm = document.querySelector('.add-cart-form');
+  if (addCartForm) {
+    addCartForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const button = this.querySelector('.btn-add');
+      const productId = button.dataset.productId;
+      const productName = button.dataset.productName;
+      const quantity = this.querySelector('.quantity-input').value;
+      
+      // Deshabilitar botón durante la petición
+      button.disabled = true;
+      button.textContent = '⏳ Agregando...';
+      
+      try {
+        const response = await fetch(this.action, {
+  method: 'POST',
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ quantity })
+});
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          showNotification(`✅ ${result.message}`, 'success');
+        } else {
+          showNotification(`❌ ${result.message}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('❌ Error al agregar producto al carrito', 'error');
+      } finally {
+        // Rehabilitar botón
+        button.disabled = false;
+        button.textContent = '🛒 Agregar al carrito';
+      }
+    });
+  }
+  
+  // Validar cantidad en tiempo real
+  const quantityInput = document.querySelector('.quantity-input');
+  if (quantityInput) {
+    quantityInput.addEventListener('change', function() {
+      const max = parseInt(this.getAttribute('max'));
+      const value = parseInt(this.value);
+      
+      if (value > max) {
+        this.value = max;
+        showNotification(`⚠️ Cantidad máxima disponible: ${max}`, 'info');
+      } else if (value < 1) {
+        this.value = 1;
+      }
+    });
+  }
+});
+</script>

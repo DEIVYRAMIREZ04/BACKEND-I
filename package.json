@@ -13,13 +13,21 @@
   "description": "",
   "dependencies": {
     "@handlebars/allow-prototype-access": "^1.0.5",
+    "bcrypt": "^6.0.0",
+    "connect-mongo": "^5.1.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-handlebars": "^8.0.3",
+    "express-session": "^1.18.2",
     "method-override": "^3.0.0",
     "mongoose": "^8.18.2",
     "mongoose-paginate-v2": "^1.9.1",
     "multer": "^2.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "session-file-store": "^1.5.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {

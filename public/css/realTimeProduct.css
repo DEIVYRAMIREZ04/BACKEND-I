@@ -1,0 +1,157 @@
+/* 🚗 Estilos personalizados King-Llantas */
+/* Tema oscuro con acentos dorados y rojos */
+
+body {
+  background-color: #b71c1c;
+  font-family: "Poppins", sans-serif;
+  background: #111;
+  color: #f5f5f5;
+  margin: 0;
+  padding: 25px;
+}
+
+/* ---------- TÍTULO ---------- */
+h1 {
+  text-align: center;
+  color: #ffd700;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- FORMULARIO ---------- */
+
+
+form#productForm {
+  background: #1c1c1c;
+  max-width: 800px;
+  margin: 0 auto 50px;
+  padding: 25px 30px;
+  border-radius: 18px;
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+form#productForm input[type="text"],
+form#productForm input[type="number"],
+form#productForm input[type="file"] {
+  flex: 1 1 45%;
+  padding: 10px 12px;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+form#productForm input:focus {
+  border-color: #ffd700;
+  outline: none;
+  box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+form#productForm button {
+  flex: 1 1 100%;
+  background: linear-gradient(90deg, #e63946, #b71c1c);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.1s;
+}
+
+form#productForm button:hover {
+  background: linear-gradient(90deg, #ff4545, #d32f2f);
+  transform: translateY(-2px);
+}
+
+/* ---------- LISTA DE PRODUCTOS ---------- */
+#productList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 25px;
+  padding: 0;
+  list-style: none;
+  margin: 0 auto;
+  max-width: 1300px;
+}
+
+#productList li {
+  background: #1b1b1b;
+  border-radius: 16px;
+  border: 1px solid #333;
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+#productList li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+}
+
+#productList img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #333;
+}
+
+#productList h3 {
+  margin: 10px 0 6px;
+  font-size: 18px;
+  color: #ffd700;
+}
+
+#productList p {
+  margin: 3px 0;
+  font-size: 14px;
+  color: #ccc;
+}
+
+/* ---------- BOTÓN ELIMINAR ---------- */
+button.deleteBtn {
+  background: #b71c1c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s ease, transform 0.1s;
+}
+
+button.deleteBtn:hover {
+  background: #e63946;
+  transform: scale(1.05);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 600px) {
+  form#productForm {
+    flex-direction: column;
+  }
+
+  form#productForm input {
+    flex: 1 1 100%;
+  }
+
+  #productList {
+    grid-template-columns: 1fr;
+  }
+}

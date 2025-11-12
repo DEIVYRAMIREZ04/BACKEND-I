@@ -1,56 +1,172 @@
-.pro {
-  background-color: #073864;
-  font-family: 'Arial', sans-serif;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap; /* Permite que los elementos bajen de línea en pantallas pequeñas */
-  padding: 20px;
+/* ==== FONDO GENERAL ==== */
+body {
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-#productsList {
+/* ==== TITULO ==== */
+h1 {
+  text-align: center;
+  font-size: 2.2em;
+  color: #ffcc00;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
+  margin-top: 30px;
+}
+
+/* ==== CONTENEDOR DE FILTROS ==== */
+.filters-container {
+  background: linear-gradient(145deg, #1a1a1a, #0b0b0b);
+  padding: 25px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 1100px;
+  margin: 25px auto;
+  box-shadow: 0 0 20px rgba(255, 204, 0, 0.1);
+  border: 1px solid #ffcc00;
+}
+
+.filters-form {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
-  padding: 0;
-  margin: 0;
+  justify-content: center;
+  align-items: flex-end;
 }
 
-#productsList li {
-  border: 1px solid #0077b6;
-  border-radius: 10px;
-  padding: 12px;
-  background: #caf0f8;
-  list-style: none;
-  flex: 1 1 250px; /* Flex-grow, flex-shrink, base width */
-  max-width: 300px; /* Limita el tamaño máximo de cada tarjeta */
-  box-sizing: border-box;
+/* ==== CAMPOS DE FILTRO ==== */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
 }
 
-#productsList button {
-  margin-top: 6px;
-  padding: 5px 10px;
-  background: #0077b6;
-  color: white;
+.filter-group label {
+  font-weight: bold;
+  color: #ffcc00;
+  margin-bottom: 6px;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 8px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  border-color: #ffcc00;
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+}
+
+/* ==== BOTONES ==== */
+.btn-filter,
+.btn-clear {
+  padding: 10px 18px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
-#productsList button:hover {
-  background: #023e8a;
+.btn-filter {
+  background: #ffcc00;
+  color: #000;
 }
 
-/* Responsive: ajustes para móviles */
-@media screen and (max-width: 768px) {
-  .pro {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
+.btn-filter:hover {
+  background: #ffdb4d;
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
+}
 
-  #productsList li {
-    flex: 1 1 90%; /* Ocupa casi todo el ancho en móviles */
-    max-width: none;
-  }
+.btn-clear {
+  background: #444;
+  color: white;
+}
+
+.btn-clear:hover {
+  background: #666;
+}
+
+/* ==== BOTÓN VER DETALLE ==== */
+.btn-detail {
+  background: transparent;
+  color: #ffcc00;
+  text-decoration: none;
+  font-weight: bold;
+  border: 1px solid #ffcc00;
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: inline-block;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.btn-detail:hover {
+  background: #ffcc00;
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+  transform: translateY(-3px);
+}
+
+/* ==== CONTENEDOR DE PRODUCTOS ==== */
+.products-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  padding: 40px 20px;
+  background: radial-gradient(circle at top, #111 0%, #000 100%);
+}
+
+/* ==== TARJETAS DE PRODUCTOS ==== */
+.product-card {
+  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+  border: 1px solid #ffcc00;
+  border-radius: 15px;
+  padding: 20px;
+  width: 270px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
+  transition: all 0.3s
+}
+
+/* ==== PAGINACIÓN ==== */
+.pagination {
+  text-align: center;
+  margin: 35px 0 20px;
+  font-size: 15px;
+  color: #ddd;
+}
+
+.pagination a {
+  text-decoration: none;
+  color: #ffcc00;
+  font-weight: bold;
+  padding: 6px 12px;
+  border: 1px solid #ffcc00;
+  border-radius: 6px;
+  margin: 0 5px;
+  transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+  background: #ffcc00;
+  color: #000;
+  box-shadow: 0 0 12px rgba(255, 204, 0, 0.7);
+}
+
+.pagination span {
+  color: #aaa;
+  font-weight: normal;
 }

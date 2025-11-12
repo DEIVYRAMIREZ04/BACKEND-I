@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ingreso Administrador</title>
+
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#06b6d4;
+      --muted:#94a3b8;
+      --danger:#ef4444;
+      --glass: rgba(255,255,255,0.04);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(600px 600px at 10% 10%, rgba(6,182,212,0.06), transparent 10%),
+        radial-gradient(500px 500px at 90% 90%, rgba(99,102,241,0.04), transparent 10%),
+        var(--bg);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .card{
+      width:100%;
+      max-width:420px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      border-radius:14px;
+      padding:28px;
+      backdrop-filter: blur(6px);
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .logo{
+      width:46px;
+      height:46px;
+      border-radius:10px;
+      background:linear-gradient(135deg,var(--accent), #6366f1);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#042027;
+      box-shadow: 0 6px 18px rgba(6,182,212,0.08);
+    }
+
+    h1{margin:0;font-size:20px}
+    p.lead{margin:6px 0 18px;color:var(--muted);font-size:13px}
+
+    .form-group{margin-bottom:14px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.04);
+      background: var(--glass);
+      color:inherit;
+      outline:none;
+      font-size:14px;
+      transition:box-shadow .12s, border-color .12s;
+    }
+    input:focus{
+      box-shadow: 0 6px 20px rgba(6,182,212,0.06);
+      border-color: rgba(6,182,212,0.9);
+    }
+
+    .password-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .show-btn{
+      background:transparent;
+      border:0;
+      color:var(--muted);
+      cursor:pointer;
+      font-size:13px;
+      padding:8px;
+      border-radius:8px;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      font-weight:600;
+      color:#042027;
+      background:var(--accent);
+      box-shadow: 0 8px 18px rgba(6,182,212,0.12);
+      text-decoration:none;
+    }
+
+    .btn.secondary{
+      background:transparent;
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,0.04);
+    }
+
+    .error {
+      margin:10px 0 0;
+      padding:10px 12px;
+      background: rgba(239,68,68,0.08);
+      color: var(--danger);
+      border:1px solid rgba(239,68,68,0.16);
+      border-radius:8px;
+      font-size:13px;
+    }
+
+    .note{margin-top:14px;color:var(--muted);font-size:13px}
+
+    @media (max-width:520px){
+      .card{padding:20px;border-radius:12px}
+      h1{font-size:18px}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="title">
+    <div class="brand">
+      <div class="logo">AD</div>
+      <div>
+        <h1 id="title">Ingreso Administrador</h1>
+        <p class="lead">Accede con tus credenciales de administrador</p>
+      </div>
+    </div>
+
+    {{#if errorMessage}}
+      <div class="error">{{errorMessage}}</div>
+    {{/if}}
+
+    <form action="/login" method="POST" aria-label="Formulario de inicio de sesión admin" novalidate>
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" name="email" placeholder="admin@ejemplo.com" required autocomplete="username" autofocus />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="password-row">
+          <input id="password" type="password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+          <button type="button" class="show-btn" id="togglePassword" aria-label="Mostrar contraseña">Mostrar</button>
+        </div>
+      </div>
+
+      <!-- Campo oculto opcional para forzar rol admin en el backend (no recomendable en producción) -->
+      <!-- <input type="hidden" name="role" value="admin"> -->
+
+      <div class="actions">
+        <button type="submit" class="btn">Entrar como Admin</button>
+        <a href="/" class="btn secondary">Volver</a>
+      </div>
+
+      <p class="note">Si no eres administrador no intentes acceder a esta área.</p>
+    </form>
+  </main>
+
+  <script>
+    // Toggle mostrar/ocultar contraseña
+    const pwd = document.getElementById('password');
+    const toggle = document.getElementById('togglePassword');
+    toggle?.addEventListener('click', () => {
+      if (!pwd) return;
+      const isPwd = pwd.getAttribute('type') === 'password';
+      pwd.setAttribute('type', isPwd ? 'text' : 'password');
+      toggle.textContent = isPwd ? 'Ocultar' : 'Mostrar';
+    });
+  </script>
+</body>
+</html>

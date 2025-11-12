@@ -1,25 +1,153 @@
-<h1>🛒 Carrito {{cart._id}}</h1>
+<link rel="stylesheet" href="/static/css/cart.css">
 
-{{#if cart.products.length}}
-  <ul>
-    {{#each cart.products}}
-      <li style="margin-bottom: 20px;">
-        <h3>{{this.product.title}}</h3>
-        <p><strong>Descripción:</strong> {{this.product.description}}</p>
-        <p><strong>Precio:</strong> ${{this.product.price}}</p>
-        <p><strong>Categoría:</strong> {{this.product.category}}</p>
-        <p><strong>Cantidad:</strong> {{this.quantity}}</p>
+<div class="cart-container">
+  <h1>🛒 Tu Carrito</h1>
 
-        {{#if this.product.thumbnails.[0]}}
-          <img src="{{this.product.thumbnails.[0]}}" alt="{{this.product.title}}" width="150" />
-        {{/if}}
+  {{#if hasProducts}}
+    <div class="cart-items">
+      {{#each cart.products}}
+        <div class="cart-item">
+          <div class="item-image">
+            {{#if this.product.thumbnails.[0]}}
+              <img src="{{this.product.thumbnails.[0]}}" alt="{{this.product.title}}" />
+            {{else}}
+              <img src="/uploads/no-image.png" alt="Sin imagen" />
+            {{/if}}
+          </div>
 
-        <form action="/api/carts/{{../cart._id}}/products/{{this.product._id}}?_method=DELETE" method="POST">
-          <button type="submit">Eliminar</button>
-        </form>
-      </li>
-    {{/each}}
-  </ul>
-{{else}}
-  <p>🕳️ Tu carrito está vacío</p>
-{{/if}}
+          <div class="item-details">
+            <h3>{{this.product.title}}</h3>
+            <p class="item-description">{{this.product.description}}</p>
+            <p class="item-category"><strong>Categoría:</strong> {{this.product.category}}</p>
+            <p class="item-price"><strong>Precio:</strong> ${{this.product.price}}</p>
+            <p class="item-total"><strong>Total:</strong> ${{this.product.price}} x {{this.quantity}}</p>
+          </div>
+
+          <div class="item-actions">
+            <div class="quantity-controls">
+              <button class="btn-quantity" onclick="updateQuantity('{{../cart._id}}', '{{this.product._id}}', -1)">-</button>
+              <span class="current-quantity">{{this.quantity}}</span>
+              <button class="btn-quantity" onclick="updateQuantity('{{../cart._id}}', '{{this.product._id}}', 1)">+</button>
+            </div>
+
+            <form action="/api/carts/{{../cart._id}}/products/{{this.product._id}}?_method=DELETE" method="POST" class="remove-form">
+              <button type="submit" class="btn-remove" data-product-name="{{this.product.title}}">🗑️ Eliminar</button>
+            </form>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+
+    <div class="cart-summary">
+      <h3>Resumen</h3>
+      <p><strong>Total de productos:</strong> {{cart.products.length}}</p>
+      <a href="/products" class="btn-continue">← Continuar comprando</a>
+    </div>
+  {{else}}
+    <div class="empty-cart">
+      <h2>🕳️ Tu carrito está vacío</h2>
+      <p>Agrega algunos productos para comenzar tu compra</p>
+      <a href="/products" class="btn-shop">Ir a productos</a>
+    </div>
+  {{/if}}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ✅ Notificación flotante
+  function showNotification(message, type = 'info') {
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.className = `notification ${type}`;
+    div.textContent = message;
+    document.body.appendChild(div);
+
+    setTimeout(() => div.classList.add('show'), 100);
+    setTimeout(() => {
+      div.classList.remove('show');
+      setTimeout(() => div.remove(), 300);
+    }, 2500);
+  }
+
+  // 🗑️ Eliminar producto (solo recarga)
+  document.querySelectorAll('.remove-form').forEach(form => {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const button = form.querySelector('.btn-remove');
+      const productName = button.dataset.productName;
+
+      if (!confirm(`¿Eliminar "${productName}" del carrito?`)) return;
+
+      button.disabled = true;
+      button.textContent = '⏳ Eliminando...';
+
+      try {
+        const response = await fetch(form.action, { method: 'POST' });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          showNotification(`✅ ${result.message}`, 'success');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showNotification('❌ No se pudo eliminar', 'error');
+        }
+      } catch (err) {
+        console.error('❌ Error eliminando producto:', err);
+        showNotification('❌ Error al eliminar', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '🗑️ Eliminar';
+      }
+    });
+  });
+
+  // 🔢 Actualizar cantidad
+  window.updateQuantity = async (cartId, productId, change) => {
+    const btn = event.target;
+    const qtyEl = btn.parentElement.querySelector('.current-quantity');
+    const current = parseInt(qtyEl.textContent);
+    const newQty = current + change;
+
+    if (newQty < 1) {
+      if (confirm('¿Eliminar este producto?')) {
+        const res = await fetch(`/api/carts/${cartId}/products/${productId}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showNotification('🗑️ Producto eliminado', 'info');
+          setTimeout(() => window.location.reload(), 1000);
+        }
+      }
+      return;
+    }
+
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/carts/${cartId}/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQty })
+      });
+      const result = await res.json();
+
+      if (result.status === 'success') {
+        qtyEl.textContent = newQty;
+        updateItemTotal(btn.closest('.cart-item'), newQty);
+        showNotification(`✅ Cantidad actualizada a ${newQty}`, 'success');
+      } else throw new Error();
+    } catch {
+      showNotification('❌ Error al actualizar', 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  // 💰 Actualiza total del producto
+  function updateItemTotal(item, newQty) {
+    const price = parseFloat(item.querySelector('.item-price').textContent.replace(/[^0-9.]/g, ''));
+    const totalEl = item.querySelector('.item-total');
+    totalEl.innerHTML = `<strong>Total:</strong> $${(price * newQty).toLocaleString()}`;
+  }
+});
+</script>

@@ -1,233 +1,200 @@
-# E-COMERCE-BACK - E-commerce con Node.js, Express y MongoDB
+# 🛒 E-commerce Backend - Entrega Final
 
-**King-Llantas** es una aplicación web tipo **E-commerce** desarrollada con **Node.js**, **Express**, **MongoDB (Mongoose)** y **Handlebars** como motor de vistas.  
-Permite realizar operaciones completas de **CRUD** (Crear, Leer, Actualizar y Eliminar) sobre productos y carritos, simulando el flujo real de una tienda en línea especializada en llantas.
+## 🚀 Características Implementadas
+- Sistema de persistencia con **MongoDB** y **Mongoose**
+- **Paginación** implementada con `mongoose-paginate-v2`
+- **Gestión completa de productos y carritos**
+- **Vistas dinámicas** con Handlebars
+- **Manejo de archivos** con Multer
+- **Arquitectura por capas** (MVC + DAO + Services)
+- **Soporte para filtros, ordenamiento y búsquedas**
 
----
+## 🧱 Endpoints de Productos
+- `GET /api/products` → Lista paginada de productos con filtros y ordenamiento  
+- `GET /api/products/:id` → Obtener producto por ID  
+- `POST /api/products` → Crear nuevo producto (permite subir imagen)  
+- `PUT /api/products/:id` → Actualizar producto existente  
+- `DELETE /api/products/:id` → Eliminar producto por ID  
 
-## 📋 Tabla de Contenido
+### Parámetros opcionales en `GET /api/products`
+- `limit`: Cantidad de productos por página (default 10)
+- `page`: Número de página (default 1)
+- `query`: Filtro por nombre o categoría
+- `sort`: Orden por precio (`asc` o `desc`)
 
-1. [Características principales](#-características-principales)  
-2. [Tecnologías utilizadas](#-tecnologías-utilizadas)  
-3. [Estructura del proyecto](#-estructura-del-proyecto)  
-4. [Instalación y configuración](#-instalación-y-configuración)  
-5. [Ejecución del proyecto](#-ejecución-del-proyecto)  
-6. [Uso del CRUD paso a paso](#-uso-del-crud-paso-a-paso)  
-   - [Productos](#1-productos)  
-   - [Carritos](#2-carritos)  
-7. [Vistas con Handlebars](#-vistas-con-handlebars)  
-8. [Autor](#-autor)
+### Ejemplo de respuesta:
+```json
+{
+  "status": "success",
+  "payload": [...],
+  "totalPages": 3,
+  "prevPage": 1,
+  "nextPage": 3,
+  "page": 2,
+  "hasPrevPage": true,
+  "hasNextPage": true,
+  "prevLink": "http://localhost:8080/api/products?page=1",
+  "nextLink": "http://localhost:8080/api/products?page=3"
+}
+🛒 Endpoints de Carrito
+GET /api/carts/:cid → Obtener carrito por ID (con populate)
 
----
+POST /api/carts → Crear un carrito vacío
 
-## Características principales
+POST /api/carts/:cid/products/:pid → Agregar producto al carrito
 
-- CRUD completo de **productos** y **carritos**.  
-- Renderizado dinámico con **Handlebars**.  
-- Conexión a base de datos en **MongoDB Atlas**.  
-- Arquitectura escalable con capas (**controllers**, **services**, **routes**, **models**).  
-- Uso de **Mongoose** para modelar los datos.  
-- Creación automática de carritos para el usuario al ingresar.  
-- Gestión de productos desde vistas y API.  
-- Integración con **dotenv** para manejo seguro de variables.
+PUT /api/carts/:cid → Reemplazar el contenido completo del carrito
 
----
+PUT /api/carts/:cid/products/:pid → Actualizar cantidad de un producto
 
-## Tecnologías utilizadas
+DELETE /api/carts/:cid/products/:pid → Eliminar un producto específico
 
-- **Node.js** – entorno de ejecución de JavaScript.  
-- **Express.js** – framework backend.  
-- **MongoDB + Mongoose** – base de datos NoSQL.  
-- **Handlebars (HBS)** – motor de plantillas para vistas dinámicas.  
-- **Nodemon** – recarga automática durante desarrollo.  
-- **Dotenv** – manejo de variables de entorno.
+DELETE /api/carts/:cid → Vaciar todo el carrito
 
----
+🧭 Vistas Implementadas
+/products → Catálogo con paginación, filtros y ordenamiento
 
-## 🗂️ Estructura del proyecto
+/product/:id → Detalle de producto con botón "Agregar al carrito"
 
-📦 E-COMERCE-BACK
-├── src/
-│ ├── app.js # Configuración principal del servidor
-│ ├── routes/
-│ │ ├── product.router.js # Rutas para productos
-│ │ └── cart.router.js # Rutas para carritos
-│ ├── controllers/
-│ │ ├── productController.js
-│ │ └── cartController.js
-│ ├── services/
-│ │ ├── productService.js
-│ │ └── cartService.js
-│ ├── models/
-│ │ ├── Product.js # Esquema de producto
-│ │ └── Cart.js # Esquema de carrito
-│ ├── views/
-│ │ ├── layouts/
-│ │ │ └── main.hbs
-│ │ ├── pages/
-│ │ │ ├── home.hbs
-│ │ │ ├── empresa.hbs
-| | | ├── detalleProduct.hbs
-│ │ │ ├── products.hbs
-│ │ │ └── cart.hbs
-| | ├──partials
-| |   ├──footer.hbs
-| |   ├──header.hbs
-│ └── config/
-│ 
-├── .env # Variables de entorno
-├── .gitignore
-├── package.json
-└── README.md
+/api/carts/:cid/view → Vista detallada del carrito
 
-yaml
-Copiar código
+🔎 Funcionalidades de Filtrado y Búsqueda
+Filtro por categoría o nombre
 
----
+Ordenamiento ascendente/descendente por precio
 
-## Instalación y configuración
+Paginación conservando filtros activos
 
-1. **Clonar el repositorio**
+Navegación fluida entre páginas con parámetros persistentes
 
-   ```bash
-   git clone https://github.com/DEIVYRAMIREZ04/BACKEND-I.git
-   
-Instalar dependencias
+⚙️ Tecnologías Utilizadas
+Node.js + Express.js – Servidor backend
 
-bash
+MongoDB + Mongoose – Persistencia de datos
 
-Copiar código
+Handlebars – Motor de plantillas para vistas
 
+Socket.io – Actualización en tiempo real
+
+Multer – Subida y manejo de imágenes
+
+Method Override – Permitir PUT/DELETE en formularios
+
+📁 Estructura del Proyecto
+css
+
+src/
+├── app.js
+├── config/
+│   └── config.js
+├── controllers/
+│   ├── productController.js
+│   └── cartController.js
+├── dao/
+│   ├── productDao.js
+│   └── cartDao.js
+├── managers/
+│   ├── ProductManager.js
+│   └── CartManager.js
+├── models/
+│   ├── product.model.js
+│   └── cart.model.js
+├── routes/
+│   ├── product.router.js
+│   └── cart.router.js
+├── services/
+│   ├── productService.js
+│   └── cartService.js
+└── Views/
+    ├── layouts/
+    │   └── main.hbs
+    ├── pages/
+    │   ├── home.hbs
+    │   ├── products.hbs
+    │   ├── detalleProduct.hbs
+    │   └── cart.hbs
+    └── partials/
+        ├── header.hbs
+        └── footer.hbs
+🚀 Instalación y Ejecución
+
+git clone https://github.com/DEIVYRAMIREZ04/BACKEND-I.git
+cd e-commerce-back
 npm install
 
-
-🚀 Ejecución del proyecto
-Modo desarrollo:
+Iniciar servidor:
 
 bash
 
-npm run dev
+npm run dev   # modo desarrollo
+npm start     # modo producción
+Acceder a:
+
+Home: http://localhost:8080
+
+Productos: http://localhost:8080/products
+
+API Productos: http://localhost:8080/api/products
+
+API Carritos: http://localhost:8080/api/carts
+
+📌 Endpoints Disponibles
+Productos
+GET /api/products
+
+GET /api/products/:id
+
+POST /api/products
+
+PUT /api/products/:id
+
+DELETE /api/products/:id
+
+Carritos
+GET /api/carts/:cid
+
+POST /api/carts
+
+POST /api/carts/:cid/products/:pid
+
+PUT /api/carts/:cid
+
+PUT /api/carts/:cid/products/:pid
+
+DELETE /api/carts/:cid/products/:pid
+
+DELETE /api/carts/:cid
+
+Vistas
+/
+
+/products
+
+/product/:id
+
+/api/carts/:cid/view
+
+🌟 Características Destacadas
+Paginación inteligente que mantiene filtros activos
+
+Filtros por nombre, categoría y disponibilidad
+
+Carrito persistente asociado al usuario actual
 
 
-La aplicación correrá en:
+Validación de datos robusta
 
-http://localhost:8080
-
-# Uso del CRUD paso a paso
-
- 1-Productos
-Modelo (Product.js):
-
-js
-
-const mongoose = require("mongoose");
-
-const productSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  price: Number,
-  category: String,
-  stock: Number
-});
-
-module.exports = mongoose.model("Product", productSchema);
-➕ Crear producto
-Ruta: POST /api/products
-Ejemplo (Postman o JSON):
-
-json
-
-{
-  "title": "Llantas Goodyear 18”",
-  "description": "Resistentes y de excelente agarre en carretera",
-  "price": 520000,
-  "category": "Camioneta",
-  "stock": 15
-}
-📖 Leer productos
-Ruta: GET /api/products
-Devuelve todos los productos almacenados.
-También se renderizan en la vista principal /.
-
-✏️ Actualizar producto
-Ruta: PUT /api/products/:id
-Ejemplo:
-
-json
-
-{
-  "price": 540000,
-  "stock": 18
-}
-❌ Eliminar producto
-Ruta: DELETE /api/products/:id
-Elimina un producto según su ID.
-
-2-Carritos
-
-Modelo (Cart.js):
-
-js
-
-const mongoose = require("mongoose");
-
-const cartSchema = new mongoose.Schema({
-  products: [{
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product"
-    },
-    quantity: { type: Number, default: 1 }
-  }]
-});
-
-module.exports = mongoose.model("Cart", cartSchema);
-➕ Crear carrito
-Ruta: POST /api/carts
-Crea un nuevo carrito vacío.
-
-🛒 Agregar producto al carrito
-Ruta: POST /api/carts/:cid/products/:pid
-Agrega un producto al carrito. Si ya existe, aumenta la cantidad.
-
-📖 Ver carrito
-Ruta: GET /api/carts/:cid/view
-Muestra la vista cart.hbs con los productos y cantidades del carrito actual.
-
-❌ Eliminar producto del carrito
-Ruta: DELETE /api/carts/:cid/products/:pid
-Elimina un producto específico del carrito.
-
-🗑️ Vaciar carrito
-Ruta: DELETE /api/carts/:cid
-Elimina todos los productos del carrito.
-
-🖼️ Vistas con Handlebars
-products.hbs
-Muestra todos los productos disponibles y permite agregarlos al carrito mediante botones de acción.
-
-cart.hbs
-Muestra los productos añadidos al carrito, sus cantidades y total a pagar.
-
-detalleProduct.hbs
-Muestrta eldetalle del mproducto.
-
-Ejemplo de navegación:
-
-hbs
-Copiar código
-<li><a href="/api/carts/{{cartId}}/view">Ver carrito</a></li>
+Manejo de errores 
 
 
+🧠 Notas de Desarrollo
+Persistencia principal con MongoDB
 
+populate en carritos para traer productos completos
+
+Vistas optimizadas para una UX/UI moderna
+
+Código estructurado bajo patrón MVC
 
 👨‍💻 Autor
-Deivy Ramírez
-
-
-
-Proyecto King-Llantas, un e-commerce educativo funcional con CRUD completo, desarrollado con Node.js, Express, MongoDB y Handlebars.
-
-
-
-📧 Contacto: deivrsmirez@gmail.com
+Desarrollado por: Deivy Ramirez — King Llantas E-commerce 2025

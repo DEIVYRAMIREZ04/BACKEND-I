@@ -1,3 +1,6 @@
+
+
+
 {{!formulario para agfregar producto}}
 <form action="/api/products" method="POST" enctype="multipart/form-data">
   <input type="text" name="title" placeholder="Nombre del producto" required />
@@ -23,7 +26,22 @@
 
   <input type="text" name="category" placeholder="Categoría" required />
 
-  <input type="file" name="imagen" accept="image/*" />
+  <div class="file-input-wrapper">
+  <input type="file" id="imageInput" name="thumbnails" hidden>
+  <label for="imageInput" class="custom-file-label">📸 Elegir imagen</label>
+  <span id="fileName">No se eligió ningún archivo</span>
+</div>
 
   <button type="submit">Crear Producto</button>
 </form>
+
+<style>
+  
+</style>
+
+<script>
+document.getElementById("imageInput").addEventListener("change", e => {
+  const fileName = e.target.files.length > 0 ? e.target.files[0].name : "No se eligió ningún archivo";
+  document.getElementById("fileName").textContent = fileName;
+});
+</script>
