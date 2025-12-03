@@ -1,7 +1,8 @@
 const { Router } = require("express");
 const productController = require("../controllers/productController");
 const multer = require("multer");
-const { auth, isAdmin } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
+const { isAdmin } = require("../middleware/authorization");
 const {
   validateCreateProduct,
   validateUpdateProduct,
