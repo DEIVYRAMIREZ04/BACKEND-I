@@ -1,5 +1,6 @@
 const cartService = require("../services/cartService");
 const productService = require("../services/productService");
+const CartDTO = require("../dtos/CartDTO");
 
 class CartController {
   async getCartByIdView(req, res) {
@@ -16,7 +17,7 @@ class CartController {
         status: "success",
         message: "Carrito obtenido correctamente",
         hasProducts,
-        payload: cart
+        payload: CartDTO.forView(cart)
       });
     } catch (err) {
       console.error("Error al mostrar carrito:", err);
@@ -29,7 +30,7 @@ class CartController {
       const { cid } = req.params;
       const cart = await cartService.getCartById(cid);
       if (!cart) return res.status(404).json({ error: "Carrito no encontrado" });
-      res.json({ status: "success", payload: cart });
+      res.json({ status: "success", payload: CartDTO.complete(cart) });
     } catch (err) {
       console.error("Error al obtener carrito:", err);
       res.status(500).json({ status: "error", error: err.message });

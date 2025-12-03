@@ -1,6 +1,7 @@
 const productService = require("../services/productService");
 const querystring = require("querystring");
 const cartService = require("../services/cartService");
+const ProductDTO = require("../dtos/ProductDTO");
 
 class ProductController {
   async getHome(req, res) {
@@ -69,7 +70,7 @@ class ProductController {
       res.json({
         status: "success",
         message: "Productos paginados obtenidos correctamente",
-        payload: products,
+        payload: products.map(p => ProductDTO.public(p)),
         totalPages,
         prevPage,
         nextPage,
@@ -91,7 +92,7 @@ class ProductController {
       if (!product)
         return res.status(404).json({ status: "error", message: "Producto no encontrado" });
 
-      res.json({ status: "success", payload: product });
+      res.json({ status: "success", payload: ProductDTO.complete(product) });
     } catch (err) {
       console.error("Error al obtener producto:", err);
       res.status(500).json({ status: "error", message: err.message });

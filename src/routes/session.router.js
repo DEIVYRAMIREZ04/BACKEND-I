@@ -93,17 +93,14 @@ router.post("/login", validateLogin, (req, res, next) => {
 router.get(
   "/current",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    res.json({
-      status: "success",
-      user: {
-        id: req.user._id,
-        first_name: req.user.first_name,
-        last_name: req.user.last_name,
-        email: req.user.email,
-        role: req.user.role,
-      },
-    });
+  async (req, res) => {
+    try {
+      const user = await userRepository.findByIdWithCart(req.user._id);
+      const userDTO = UserDTO.fromEntity(user);
+      res.json({ status: "success", payload: userDTO });
+    } catch (error) {
+      res.status(500).json({ status: "error", message: error.message });
+    }
   }
 );
 
