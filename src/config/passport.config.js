@@ -13,10 +13,19 @@ function initializePassport() {
     new LocalStrategy(
       {
         usernameField: "email",
+        passwordField: "password",
         passReqToCallback: true, // permite acceder a req.body
       },
       async (req, email, password, done) => {
         try {
+          const { first_name, last_name, age } = req.body;
+
+          // Validar campos obligatorios
+          if (!first_name || !email || !password) {
+            return done(null, false, { message: "Faltan campos obligatorios (nombre, correo o contraseña)" });
+          }
+
+          // Verificar si ya existe un usuario con ese correo
           const existingUser = await User.findOne({ email });
           if (existingUser) {
             return done(null, false, { message: "El usuario ya existe" });
@@ -24,15 +33,17 @@ function initializePassport() {
 
           const hashedPassword = await bcrypt.hash(password, 10);
           const newUser = await User.create({
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
+            first_name,
+            last_name: last_name || "",
             email,
+            age: age || null,
             password: hashedPassword,
-            role: req.body.role || "user",
+            role: "user",
           });
 
           return done(null, newUser);
         } catch (error) {
+          console.error("Error en registro:", error);
           return done(error);
         }
       }
@@ -45,6 +56,7 @@ function initializePassport() {
     new LocalStrategy(
       {
         usernameField: "email",
+        passwordField: "password",
       },
       async (email, password, done) => {
         try {
@@ -84,6 +96,10 @@ function initializePassport() {
       }
     )
   );
+
+  // Nota: Con JWT no necesitamos serialización/deserialización
+  // Ya que no usamos sesiones server-side
 }
 
 module.exports = initializePassport;
+module.exports.JWT_SECRET = JWT_SECRET;

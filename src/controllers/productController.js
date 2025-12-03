@@ -3,7 +3,6 @@ const querystring = require("querystring");
 const cartService = require("../services/cartService");
 
 class ProductController {
-  // 🏠 Obtener productos y crear carrito automáticamente
   async getHome(req, res) {
     try {
       const products = await productService.getAllProducts();
@@ -23,65 +22,6 @@ class ProductController {
     }
   }
 
-  // 📄 Obtener productos paginados (vista → JSON)
-  async getAllProductsView(req, res) {
-    try {
-      let { limit = 10, page = 1, sort, query } = req.query;
-      limit = parseInt(limit) || 10;
-      page = parseInt(page) || 1;
-
-      const filter = {};
-      if (query) {
-        if (query.includes(":")) {
-          const [key, value] = query.split(":");
-          if (key === "category") filter.category = value;
-          else if (key === "status")
-            filter.status = value === "true" || value === "1";
-          else filter[key] = value;
-        } else {
-          filter.$or = [{ category: query }, { title: new RegExp(query, "i") }];
-        }
-      }
-
-      const sortObj = {};
-      if (sort === "asc") sortObj.price = 1;
-      else if (sort === "desc") sortObj.price = -1;
-
-      const total = await productService.countProducts(filter);
-      const totalPages = Math.max(1, Math.ceil(total / limit));
-      if (page > totalPages) page = totalPages;
-
-      const products = await productService.getProductsPaginated({
-        filter,
-        sort: sortObj,
-        limit,
-        page,
-      });
-
-      res.json({
-        status: "success",
-        message: "Productos cargados correctamente",
-        payload: {
-          products: products.docs,
-          page: products.page,
-          totalPages: products.totalPages,
-          hasPrevPage: products.hasPrevPage,
-          hasNextPage: products.hasNextPage,
-          prevPage: products.prevPage,
-          nextPage: products.nextPage,
-          limit,
-          query,
-          sort,
-          cartId: req.app.locals.cartId || null
-        }
-      });
-    } catch (err) {
-      console.error("Error cargando productos:", err);
-      res.status(500).json({ status: "error", message: "Error al cargar productos" });
-    }
-  }
-
-  // 📦 API con paginación
   async getAllProductsApi(req, res) {
     try {
       let { limit = 10, page = 1, sort, query } = req.query;
@@ -145,7 +85,6 @@ class ProductController {
     }
   }
 
-  // 🔍 Obtener producto por ID
   async getProductById(req, res) {
     try {
       const product = await productService.getProductById(req.params.id);
@@ -159,33 +98,6 @@ class ProductController {
     }
   }
 
-  // 📖 Detalle de producto (vista → JSON)
-  async getProductDetailView(req, res) {
-    try {
-      const { id } = req.params;
-      const product = await productService.getProductById(id);
-
-      if (!product) {
-        return res.status(404).json({ status: "error", message: "Producto no encontrado" });
-      }
-
-      const cartId = req.app.locals.cartId || null;
-
-      res.json({
-        status: "success",
-        message: "Detalle de producto obtenido correctamente",
-        payload: {
-          product,
-          cartId
-        }
-      });
-    } catch (error) {
-      console.error("Error al cargar detalle del producto:", error);
-      res.status(500).json({ status: "error", message: "Error interno del servidor" });
-    }
-  }
-
-  // ➕ Crear producto
   async createProduct(req, res) {
     try {
       const { title, description, code, price, status, stock, category } = req.body;
@@ -216,7 +128,6 @@ class ProductController {
     }
   }
 
-  // 🔁 Actualizar producto
   async updateProduct(req, res) {
     try {
       const updated = await productService.updateProductById(req.params.id, req.body);
@@ -234,7 +145,6 @@ class ProductController {
     }
   }
 
-  // ❌ Eliminar producto
   async deleteProduct(req, res) {
     try {
       const deleted = await productService.deleteProductById(req.params.id);

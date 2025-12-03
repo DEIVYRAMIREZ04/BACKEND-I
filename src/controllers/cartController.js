@@ -2,7 +2,6 @@ const cartService = require("../services/cartService");
 const productService = require("../services/productService");
 
 class CartController {
-  // 🛒 Obtener carrito por ID (JSON)
   async getCartByIdView(req, res) {
     try {
       const { cid } = req.params;
@@ -25,7 +24,6 @@ class CartController {
     }
   }
 
-  // 🔍 Obtener carrito (JSON)
   async getCart(req, res) {
     try {
       const { cid } = req.params;
@@ -38,7 +36,6 @@ class CartController {
     }
   }
 
-  // ➕ Agregar producto al carrito global (o crear uno si no existe)
   async addProductToCart(req, res) {
     try {
       const { pid } = req.params;
@@ -56,12 +53,20 @@ class CartController {
         });
       }
 
-      let cid = req.app.locals.cartId;
+      // Obtener o crear carrito para el usuario autenticado
+      let cid = req.body.cid; // Si se pasa cartId en el body, usarlo
+      
       if (!cid) {
-        const newCart = await cartService.createCart();
-        cid = newCart._id.toString();
-        req.app.locals.cartId = cid;
-        console.log(`🆕 Nuevo carrito creado: ${cid}`);
+        // Si no hay carrito, buscar el del usuario autenticado (si está logueado)
+        if (req.user && req.user._id) {
+          const userCart = await cartService.getOrCreateCartForUser(req.user._id);
+          cid = userCart._id.toString();
+        } else {
+          // Usuario no autenticado, crear carrito anónimo
+          const newCart = await cartService.createCart();
+          cid = newCart._id.toString();
+          console.log(`🆕 Nuevo carrito anónimo creado: ${cid}`);
+        }
       }
 
       const product = await productService.getProductById(pid);
@@ -84,7 +89,7 @@ class CartController {
         });
       }
 
-      console.log(`✅ Producto "${product.title}" agregado al carrito (${cid}) - Cantidad: ${qty}`);
+      console.log(`Producto "${product.title}" agregado al carrito (${cid}) - Cantidad: ${qty}`);
 
       res.json({
         status: "success",
@@ -99,7 +104,7 @@ class CartController {
         }
       });
     } catch (err) {
-      console.error("❌ Error al agregar producto:", err);
+      console.error("Error al agregar producto:", err);
       res.status(500).json({
         status: "error",
         message: "Error interno del servidor",
@@ -108,7 +113,6 @@ class CartController {
     }
   }
 
-  // ❌ Eliminar producto específico del carrito
   async deleteProductFromCart(req, res) {
     try {
       const { cid, pid } = req.params;
@@ -142,7 +146,7 @@ class CartController {
         });
       }
 
-      console.log(`🗑️ Producto "${productInCart.product.title}" eliminado del carrito (${cid})`);
+      console.log(`Producto "${productInCart.product.title}" eliminado del carrito (${cid})`);
 
       res.json({
         status: "success",
@@ -155,7 +159,7 @@ class CartController {
         }
       });
     } catch (error) {
-      console.error("❌ Error al eliminar producto:", error);
+      console.error("Error al eliminar producto:", error);
       res.status(500).json({
         status: "error",
         message: "Error interno del servidor",
@@ -164,7 +168,6 @@ class CartController {
     }
   }
 
-  // 🔁 Reemplazar todos los productos
   async replaceCartProducts(req, res) {
     try {
       const { cid } = req.params;
@@ -179,7 +182,6 @@ class CartController {
     }
   }
 
-  // 🔢 Actualizar cantidad de un producto
   async updateProductQuantity(req, res) {
     try {
       const { cid, pid } = req.params;
@@ -226,7 +228,7 @@ class CartController {
         });
       }
 
-      console.log(`🔁 Cantidad actualizada de "${productInCart.product.title}" a ${qty}`);
+      console.log(`Cantidad actualizada de "${productInCart.product.title}" a ${qty}`);
 
       res.json({
         status: "success",
@@ -234,7 +236,7 @@ class CartController {
         payload: updatedCart
       });
     } catch (err) {
-      console.error("❌ Error al actualizar cantidad:", err);
+      console.error("Error al actualizar cantidad:", err);
       res.status(500).json({
         status: "error",
         message: "Error interno del servidor",
@@ -243,7 +245,6 @@ class CartController {
     }
   }
 
-  // 🧹 Vaciar carrito completo
   async clearCart(req, res) {
     try {
       const { cid } = req.params;
@@ -257,7 +258,6 @@ class CartController {
     }
   }
 
-  // 🆕 Crear carrito vacío
   async createCart(req, res) {
     try {
       const newCart = await cartService.createCart();
@@ -265,6 +265,31 @@ class CartController {
     } catch (err) {
       console.error("Error al crear carrito:", err);
       res.status(500).json({ status: "error", error: err.message });
+    }
+  }
+
+  async checkout(req, res) {
+    try {
+      const { cid } = req.params;
+      const userId = req.user && req.user._id;
+
+      if (!userId) return res.status(401).json({ status: 'error', message: 'Autenticación requerida' });
+
+      const ticketService = require('../services/ticketService');
+      const TicketDTO = require('../dtos/TicketDTO');
+
+      const result = await ticketService.checkout(cid, userId);
+
+      if (!result || !result.ticket) {
+        return res.status(400).json({ status: 'error', message: result ? result.message : 'No se creó ticket', failedItems: result ? result.failedItems : [] });
+      }
+
+      const confirmation = TicketDTO.confirmation(result.ticket, result.failedItems);
+
+      res.status(200).json({ status: 'success', payload: confirmation });
+    } catch (error) {
+      console.error('Error en checkout:', error);
+      res.status(500).json({ status: 'error', message: error.message });
     }
   }
 }

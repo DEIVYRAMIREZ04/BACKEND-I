@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   age: { type: Number, min: 0 },
   password: { type: String, required: true }, // hash con bcrypt
-  cart: { type: mongoose.Schema.Types.ObjectId, ref: "Carts" },
+  cart: { type: mongoose.Schema.Types.ObjectId, ref: "Cart" },
   role: { type: String, default: "user", enum: ["user", "admin"] },
 }, { timestamps: true });
 

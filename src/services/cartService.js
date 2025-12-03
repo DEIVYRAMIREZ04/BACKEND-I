@@ -1,78 +1,150 @@
-const Cart = require("../models/cart.model"); // 👈 tu esquema mongoose
+const mongoose = require("mongoose");
+const RepositoryFactory = require("../repositories/RepositoryFactory");
+const Product = require("../models/product.model");
+const User = require("../models/User.model");
 
 class CartService {
-  async getAnyCart() {
-  const cart = await Cart.findOne();
-  return cart;
-}
+  constructor() {
+    this.cartRepository = RepositoryFactory.createCartRepository();
+    this.userRepository = RepositoryFactory.createUserRepository();
+    this.productRepository = RepositoryFactory.createProductRepository();
+  }
 
+  /**
+   * Crear nuevo carrito vacío
+   * @returns {Promise} - Carrito creado
+   */
   async createCart() {
-    const newCart = new Cart({ products: [] });
-    return await newCart.save();
+    return await this.cartRepository.create({ products: [] });
   }
 
+  /**
+   * Obtener carrito por ID
+   * @param {String} id - ID del carrito
+   * @returns {Promise} - Carrito encontrado
+   */
   async getCartById(id) {
-    return await Cart.findById(id).populate("products.product");
+    if (!mongoose.isValidObjectId(id)) return null;
+    return await this.cartRepository.findByIdWithProducts(id);
   }
 
-async addProductToCart(cid, pid, quantity = 1) {
-  const cart = await Cart.findById(cid);
-  if (!cart) return null;
+  /**
+   * Obtener o crear carrito para un usuario
+   * @param {String} userId - ID del usuario
+   * @returns {Promise} - Carrito del usuario
+   */
+  async getOrCreateCartForUser(userId) {
+    if (!mongoose.isValidObjectId(userId)) return null;
 
-  // Verifica si el producto ya está en el carrito
-  const productIndex = cart.products.findIndex(p => p.product?.toString() === pid);
+    try {
+      const user = await this.userRepository.findByIdWithCart(userId);
 
-  // Si el producto existe, sumamos la cantidad
-  if (productIndex >= 0 && cart.products[productIndex]) {
-    cart.products[productIndex].quantity = 
-      (cart.products[productIndex].quantity || 0) + quantity;
-  } else {
-    // Si no existe o el registro está roto, lo añadimos correctamente
-    cart.products.push({ product: pid, quantity });
-  }
+      if (user && user.cart) {
+        // Usuario ya tiene carrito, devolverlo
+        return await this.cartRepository.findByIdWithProducts(user.cart._id);
+      }
 
-  // Filtra cualquier entrada nula o rota (por si el carrito tiene basura)
-  cart.products = cart.products.filter(p => p && p.product);
+      // Usuario no tiene carrito, crear uno nuevo
+      const newCart = await this.cartRepository.create({ products: [] });
+      await this.userRepository.updateUserCart(userId, newCart._id);
 
-  await cart.save();
-  return await cart.populate("products.product");
-}
-
-
-  async removeProductFromCart(cid, pid) {
-    const cart = await Cart.findById(cid);
-    if (!cart) return null;
-
-    cart.products = cart.products.filter(p => p.product.toString() !== pid);
-    return await cart.save();
-  }
-
-  async clearCart(cid) {
-    const cart = await Cart.findById(cid);
-    if (!cart) return null;
-
-    cart.products = [];
-    return await cart.save();
-  }
-
-  async replaceProducts(cid, products) {
-    const cart = await Cart.findById(cid);
-    if (!cart) return null;
-
-    cart.products = products;
-    return await cart.save();
-  }
-
-  async updateQuantity(cid, pid, quantity) {
-    const cart = await Cart.findById(cid);
-    if (!cart) return null;
-
-    const productIndex = cart.products.findIndex(p => p.product.toString() === pid);
-    if (productIndex >= 0) {
-      cart.products[productIndex].quantity = quantity;
-      return await cart.save();
+      return newCart;
+    } catch (error) {
+      console.error("Error en getOrCreateCartForUser:", error);
+      throw error;
     }
-    return null;
+  }
+
+  /**
+   * Agregar producto al carrito
+   * @param {String} cid - ID del carrito
+   * @param {String} pid - ID del producto
+   * @param {Number} quantity - Cantidad
+   * @returns {Promise} - Carrito actualizado
+   */
+  async addProductToCart(cid, pid, quantity = 1) {
+    // Validaciones
+    if (!mongoose.isValidObjectId(cid) || !mongoose.isValidObjectId(pid)) {
+      return null;
+    }
+
+    if (quantity <= 0) quantity = 1;
+
+    // Verificar que el producto exista usando Repository
+    const productExists = await this.productRepository.findById(pid);
+    if (!productExists) return null;
+
+    // Usar Repository para agregar producto
+    return await this.cartRepository.addProduct(cid, pid, quantity);
+  }
+
+  /**
+   * Eliminar producto del carrito
+   * @param {String} cid - ID del carrito
+   * @param {String} pid - ID del producto
+   * @returns {Promise} - Carrito actualizado
+   */
+  async removeProductFromCart(cid, pid) {
+    if (!mongoose.isValidObjectId(cid) || !mongoose.isValidObjectId(pid)) {
+      return null;
+    }
+    return await this.cartRepository.removeProduct(cid, pid);
+  }
+
+  /**
+   * Vaciar carrito
+   * @param {String} cid - ID del carrito
+   * @returns {Promise} - Carrito vacío
+   */
+  async clearCart(cid) {
+    if (!mongoose.isValidObjectId(cid)) return null;
+    return await this.cartRepository.clearCart(cid);
+  }
+
+  /**
+   * Reemplazar todos los productos del carrito
+   * @param {String} cid - ID del carrito
+   * @param {Array} products - Array de productos
+   * @returns {Promise} - Carrito actualizado
+   */
+  async replaceProducts(cid, products) {
+    if (!mongoose.isValidObjectId(cid)) return null;
+    if (!Array.isArray(products)) return null;
+    return await this.cartRepository.replaceProducts(cid, products);
+  }
+
+  /**
+   * Actualizar cantidad de producto en carrito
+   * @param {String} cid - ID del carrito
+   * @param {String} pid - ID del producto
+   * @param {Number} quantity - Nueva cantidad
+   * @returns {Promise} - Carrito actualizado
+   */
+  async updateQuantity(cid, pid, quantity) {
+    if (!mongoose.isValidObjectId(cid) || !mongoose.isValidObjectId(pid)) {
+      return null;
+    }
+    if (quantity <= 0) quantity = 1;
+    return await this.cartRepository.updateQuantity(cid, pid, quantity);
+  }
+
+  /**
+   * Obtener cantidad total de items en carrito
+   * @param {String} cid - ID del carrito
+   * @returns {Promise<Number>}
+   */
+  async getTotalItems(cid) {
+    return await this.cartRepository.getTotalItems(cid);
+  }
+
+  /**
+   * Obtener cantidad de un producto específico en carrito
+   * @param {String} cid - ID del carrito
+   * @param {String} pid - ID del producto
+   * @returns {Promise<Number>}
+   */
+  async getProductQuantity(cid, pid) {
+    return await this.cartRepository.getProductQuantity(cid, pid);
   }
 }
 

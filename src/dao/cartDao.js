@@ -1,80 +1,141 @@
-const Cart = require("../models/Cart");
+const mongoose = require("mongoose");
+const Cart = require("../models/cart.model");
 
 class CartDao {
   async createCart() {
-    return await Cart.create({ products: [] });
+    try {
+      return await Cart.create({ products: [] });
+    } catch (error) {
+      console.error("Error en DAO.createCart:", error);
+      throw error;
+    }
   }
 
-  async getCartById(cartId, { populate = false } = {}) {
-    if (populate) {
-      return await Cart.findById(cartId).populate("products.product");
+  async findById(id, { populate = false } = {}) {
+    try {
+      if (!mongoose.isValidObjectId(id)) return null;
+      
+      const query = Cart.findById(id);
+      if (populate) query.populate("products.product");
+      
+      return await query;
+    } catch (error) {
+      console.error("Error en DAO.findById:", error);
+      throw error;
     }
-    return await Cart.findById(cartId);
   }
 
-  async addProductToCart(cartId, productId) {
-    const cart = await Cart.findById(cartId);
-    if (!cart) return null;
-
-    const existing = cart.products.find(
-      (p) => p.product.toString() === productId
-    );
-
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cart.products.push({ product: productId, quantity: 1 });
+  async findOne({ populate = false } = {}) {
+    try {
+      const query = Cart.findOne();
+      if (populate) query.populate("products.product");
+      return await query;
+    } catch (error) {
+      console.error("Error en DAO.findOne:", error);
+      throw error;
     }
+  }
 
-    await cart.save();
-    return cart;
+  async addProduct(cartId, productId, quantity) {
+    try {
+      if (!mongoose.isValidObjectId(cartId) || !mongoose.isValidObjectId(productId)) {
+        return null;
+      }
+
+      const cart = await Cart.findById(cartId);
+      if (!cart) return null;
+
+      const index = cart.products.findIndex(
+        p => p.product?.toString() === productId
+      );
+
+      if (index >= 0) {
+        cart.products[index].quantity = (cart.products[index].quantity || 0) + quantity;
+      } else {
+        cart.products.push({ product: productId, quantity });
+      }
+
+      cart.products = cart.products.filter(p => p && p.product);
+      await cart.save();
+      return await cart.populate("products.product");
+    } catch (error) {
+      console.error("Error en DAO.addProduct:", error);
+      throw error;
+    }
   }
 
   async removeProduct(cartId, productId) {
-    const cart = await Cart.findById(cartId);
-    if (!cart) return null;
+    try {
+      if (!mongoose.isValidObjectId(cartId) || !mongoose.isValidObjectId(productId)) {
+        return null;
+      }
 
-    cart.products = cart.products.filter(
-      (p) => p.product.toString() !== productId
-    );
+      const cart = await Cart.findById(cartId);
+      if (!cart) return null;
 
-    await cart.save();
-    return cart;
-  }
+      cart.products = cart.products.filter(
+        p => p.product.toString() !== productId
+      );
 
-  async replaceProducts(cartId, productsArray) {
-    const cart = await Cart.findById(cartId);
-    if (!cart) return null;
-
-    // productsArray = [{ product: id, quantity: n }]
-    cart.products = productsArray;
-    await cart.save();
-    return cart;
-  }
-
-  async updateQuantity(cartId, productId, quantity) {
-    const cart = await Cart.findById(cartId);
-    if (!cart) return null;
-
-    const productInCart = cart.products.find(
-      (p) => p.product.toString() === productId
-    );
-
-    if (!productInCart) return null;
-
-    productInCart.quantity = quantity;
-    await cart.save();
-    return cart;
+      return await cart.save();
+    } catch (error) {
+      console.error("Error en DAO.removeProduct:", error);
+      throw error;
+    }
   }
 
   async clearCart(cartId) {
-    const cart = await Cart.findById(cartId);
-    if (!cart) return null;
+    try {
+      if (!mongoose.isValidObjectId(cartId)) return null;
 
-    cart.products = [];
-    await cart.save();
-    return cart;
+      const cart = await Cart.findById(cartId);
+      if (!cart) return null;
+
+      cart.products = [];
+      return await cart.save();
+    } catch (error) {
+      console.error("Error en DAO.clearCart:", error);
+      throw error;
+    }
+  }
+
+  async replaceProducts(cartId, products) {
+    try {
+      if (!mongoose.isValidObjectId(cartId)) return null;
+
+      const cart = await Cart.findById(cartId);
+      if (!cart) return null;
+
+      cart.products = products;
+      return await cart.save();
+    } catch (error) {
+      console.error("Error en DAO.replaceProducts:", error);
+      throw error;
+    }
+  }
+
+  async updateQuantity(cartId, productId, quantity) {
+    try {
+      if (!mongoose.isValidObjectId(cartId) || !mongoose.isValidObjectId(productId)) {
+        return null;
+      }
+
+      const cart = await Cart.findById(cartId);
+      if (!cart) return null;
+
+      const index = cart.products.findIndex(
+        p => p.product.toString() === productId
+      );
+
+      if (index < 0) return null;
+
+      cart.products[index].quantity = quantity;
+      return await cart.save();
+    } catch (error) {
+      console.error("Error en DAO.updateQuantity:", error);
+      throw error;
+    }
   }
 }
 
-module.exports = CartDao;
+module.exports = new CartDao();

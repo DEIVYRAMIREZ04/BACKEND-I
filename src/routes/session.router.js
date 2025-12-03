@@ -1,14 +1,13 @@
 const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const initializePassport = require("../config/passport.config");
 const { JWT_SECRET } = require("../config/passport.config");
+const { validateRegister, validateLogin } = require("../middleware/validation");
+const UserDTO = require("../dtos/UserDTO");
 const router = express.Router();
 
-/**
- * @route POST /api/sessions/register
- * @desc Registra un nuevo usuario y devuelve el token JWT
- */
-router.post("/register", (req, res, next) => {
+router.post("/register", validateRegister, (req, res, next) => {
   passport.authenticate("register", { session: false }, (err, user, info) => {
     if (err) return res.status(500).json({ status: "error", error: err.message });
 
@@ -19,7 +18,6 @@ router.post("/register", (req, res, next) => {
       });
     }
 
-    // ✅ Generar el token JWT inmediatamente después del registro
     const token = jwt.sign(
       {
         id: user._id,
@@ -29,7 +27,7 @@ router.post("/register", (req, res, next) => {
         last_name: user.last_name,
       },
       JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
 
     return res.status(201).json({
@@ -47,11 +45,7 @@ router.post("/register", (req, res, next) => {
   })(req, res, next);
 });
 
-/**
- * @route POST /api/sessions/login
- * @desc Inicia sesión y devuelve un token JWT
- */
-router.post("/login", (req, res, next) => {
+router.post("/login", validateLogin, (req, res, next) => {
   passport.authenticate("login", { session: false }, (err, user, info) => {
     if (err) return res.status(500).json({ status: "error", error: err.message });
 
@@ -62,7 +56,6 @@ router.post("/login", (req, res, next) => {
       });
     }
 
-    // ✅ Generar token JWT para el usuario autenticado
     const token = jwt.sign(
       {
         id: user._id,
@@ -72,7 +65,7 @@ router.post("/login", (req, res, next) => {
         last_name: user.last_name,
       },
       JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
 
     return res.json({
@@ -90,10 +83,6 @@ router.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
-/**
- * @route GET /api/sessions/current
- * @desc Devuelve los datos del usuario autenticado (requiere JWT)
- */
 router.get(
   "/current",
   passport.authenticate("jwt", { session: false }),

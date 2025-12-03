@@ -1,97 +1,135 @@
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt");
 const User = require("../models/User.model");
+const bcrypt = require("bcrypt");
 
-const initPassport = () => {
-  // ======= Estrategia de LOGIN =======
-  passport.use(
-    "login",
-    new LocalStrategy(
-      {
-        usernameField: "email",
-        passwordField: "password",
-      },
-      async (email, password, done) => {
-        try {
-          // Buscar usuario por email
-          const user = await User.findOne({ email }).lean();
-          if (!user) {
-            return done(null, false, { message: "Usuario no encontrado" });
-          }
-
-          // Comparar contraseña hasheada
-          const isValid = await bcrypt.compare(password, user.password);
-          if (!isValid) {
-            return done(null, false, { message: "Contraseña incorrecta" });
-          }
-
-          // Si todo va bien, devuelve el usuario
-          return done(null, user);
-        } catch (err) {
-          return done(err);
-        }
-      }
-    )
-  );
-
-  // ======= Estrategia de REGISTRO =======
-  passport.use(
-    "register",
-    new LocalStrategy(
-      {
-        usernameField: "email",
-        passwordField: "password",
-        passReqToCallback: true,
-      },
-      async (req, email, password, done) => {
-        try {
-          const { first_name, last_name, age } = req.body;
-
-          // Validar campos obligatorios según el nuevo modelo
-          if (!first_name || !email || !password) {
-            return done(null, false, { message: "Faltan campos obligatorios (nombre, correo o contraseña)" });
-          }
-
-          // Verificar si ya existe un usuario con ese correo
-          const userExist = await User.findOne({ email }).lean();
-          if (userExist) {
-            return done(null, false, { message: "El usuario ya existe" });
-          }
-
-          // Hashear contraseña
-          const hashedPassword = await bcrypt.hash(password, 10);
-
-          // Crear nuevo usuario (solo los campos válidos del modelo)
-          const newUser = await User.create({
-            first_name,
-            last_name, // opcional
-            email,
-            age,       // opcional
-            password: hashedPassword,
-            role: "user", // default en el modelo, pero lo dejamos explícito
-          });
-
-          return done(null, newUser);
-        } catch (err) {
-          console.error("Error en registro:", err);
-          return done(err);
-        }
-      }
-    )
-  );
-
-  // ======= Serialización =======
-  passport.serializeUser((user, done) => done(null, user._id));
-
-  passport.deserializeUser(async (id, done) => {
+class AuthController {
+  /**
+   * Obtiene el usuario actual autenticado
+   * Usado típicamente después de una autenticación JWT exitosa
+   */
+  async getCurrentUser(req, res) {
     try {
-      const user = await User.findById(id).lean();
-      done(null, user);
-    } catch (err) {
-      done(err);
-    }
-  });
-};
+      if (!req.user) {
+        return res.status(401).json({
+          status: "error",
+          message: "Usuario no autenticado",
+        });
+      }
 
-module.exports = { passport, initPassport };
+      res.json({
+        status: "success",
+        user: {
+          id: req.user._id,
+          first_name: req.user.first_name,
+          last_name: req.user.last_name,
+          email: req.user.email,
+          role: req.user.role,
+        },
+      });
+    } catch (error) {
+      console.error("Error al obtener usuario actual:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error interno del servidor",
+      });
+    }
+  }
+
+  /**
+   * Actualiza datos del perfil del usuario autenticado
+   */
+  async updateProfile(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: "error",
+          message: "Usuario no autenticado",
+        });
+      }
+
+      const { first_name, last_name, age } = req.body;
+      const updateData = {};
+
+      if (first_name) updateData.first_name = first_name;
+      if (last_name) updateData.last_name = last_name;
+      if (age) updateData.age = age;
+
+      const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
+        new: true,
+      });
+
+      res.json({
+        status: "success",
+        message: "Perfil actualizado correctamente",
+        user: {
+          id: updatedUser._id,
+          first_name: updatedUser.first_name,
+          last_name: updatedUser.last_name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+        },
+      });
+    } catch (error) {
+      console.error("Error al actualizar perfil:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error al actualizar perfil",
+      });
+    }
+  }
+
+  /**
+   * Cambia la contraseña del usuario autenticado
+   */
+  async changePassword(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: "error",
+          message: "Usuario no autenticado",
+        });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          status: "error",
+          message: "Debe proporcionar contraseña actual y nueva",
+        });
+      }
+
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuario no encontrado",
+        });
+      }
+
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({
+          status: "error",
+          message: "Contraseña actual incorrecta",
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+
+      res.json({
+        status: "success",
+        message: "Contraseña actualizada correctamente",
+      });
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error al cambiar contraseña",
+      });
+    }
+  }
+}
+
+module.exports = new AuthController();
