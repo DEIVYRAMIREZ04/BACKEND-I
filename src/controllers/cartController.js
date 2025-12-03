@@ -75,10 +75,15 @@ class CartController {
         return res.status(404).json({ status: "error", message: "Producto no encontrado" });
       }
 
-      if (product.stock < qty) {
+      // ✅ Validar stock usando el método del repository
+      const productRepo = require("../repositories/RepositoryFactory").createProductRepository();
+      const hasStock = await productRepo.hasEnoughStock(pid, qty);
+      
+      if (!hasStock) {
+        const availableStock = await productRepo.getStock(pid);
         return res.status(400).json({
           status: "error",
-          message: `Stock insuficiente. Disponible: ${product.stock}`
+          message: `Stock insuficiente. Disponible: ${availableStock}, Solicitado: ${qty}`
         });
       }
 
