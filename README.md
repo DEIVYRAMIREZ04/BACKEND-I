@@ -1,103 +1,134 @@
-# 🛒 E-commerce Backend - Entrega Final
+# 🛒 E-Commerce Backend API
+
+Backend profesional de e-commerce con arquitectura escalable, autenticación JWT, autorización por roles y sistema de compra completo.
+
+## ⚡ Quick Start
+
+### Requisitos
+- Node.js v20+
+- MongoDB Atlas
+- Gmail App Password (para emails)
+
+### Instalación
+
+```bash
+# 1. Instalar dependencias
+npm install
+
+# 2. Configurar variables de entorno (.env)
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/db
+JWT_SECRET=tu_secreto
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=tu_email@gmail.com
+SMTP_PASSWORD=app_password
+SMTP_FROM=tu_email@gmail.com
+FRONTEND_URL=http://localhost:3000
+
+# 3. Iniciar servidor
+npm start          # Producción
+npm run dev        # Desarrollo
+```
+
+## 📚 Documentación
+
+- **[GUIA_EXPOSICION.md](./GUIA_EXPOSICION.md)** - Guía paso a paso para presentación
+
+## 🔗 Endpoints Principales
+
+### Autenticación
+- `POST /api/sessions/register` - Registrar usuario
+- `POST /api/sessions/login` - Iniciar sesión
+- `GET /api/sessions/current` - Usuario actual
+- `POST /api/sessions/forgot-password` - Recuperar contraseña
+- `POST /api/sessions/reset-password` - Restablecer contraseña
+
+### Productos
+- `GET /api/products` - Listar productos
+- `GET /api/products/:id` - Obtener producto
+- `POST /api/products` (admin) - Crear producto
+- `PUT /api/products/:id` (admin) - Actualizar producto
+- `DELETE /api/products/:id` (admin) - Eliminar producto
+
+### Carritos
+- `POST /api/carts` - Crear carrito
+- `GET /api/carts/:cid` - Obtener carrito
+- `POST /api/carts/:cid/products/:pid` - Agregar producto
+- `POST /api/carts/:cid/checkout` - Procesar compra
+
+## 🏗️ Arquitectura
+
+```
+Controllers → Services → Repositories → DAOs → MongoDB
+```
+
+**7 Capas:**
+1. **Controllers** - Manejo de requests
+2. **Services** - Lógica de negocio
+3. **Repositories** - Abstracción de datos (patrón Repository)
+4. **DAOs** - Operaciones CRUD
+5. **Models** - Esquemas Mongoose
+6. **Middleware** - Autenticación y autorización
+7. **Routes** - Mapeo de endpoints
+
+## 🔐 Seguridad
+
+- ✅ JWT (24h) - Autenticación stateless
+- ✅ Bcrypt - Hash de contraseñas
+- ✅ isAdmin - Solo administradores
+- ✅ isOwner - Validación de propiedad
+- ✅ DTOs - Respuestas seguras (sin passwords)
+- ✅ Email 2FA - Recuperación de contraseña
+
+## 📦 Tecnologías
+
+- Express.js 5.1.0
+- MongoDB + Mongoose 8.18.2
+- JWT + Passport.js
+- Bcrypt 6.0.0
+- Nodemailer 6.9.7
+- Socket.IO 4.8.1
+- Express-Validator 7.0.0
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── controllers/      # Manejo de requests
+├── services/         # Lógica de negocio
+├── repositories/     # Patrón Repository
+├── dao/             # Acceso a datos
+├── models/          # Esquemas MongoDB
+├── dtos/            # DTOs seguros
+├── middleware/      # Auth, autorización
+├── routes/          # Endpoints
+├── config/          # Configuración
+└── sockets/         # Real-time
+```
 
 ## 🚀 Características Implementadas
-- Sistema de persistencia con **MongoDB** y **Mongoose**
-- **Paginación** implementada con `mongoose-paginate-v2`
-- **Gestión completa de productos y carritos**
-- **Vistas dinámicas** con Handlebars
-- **Manejo de archivos** con Multer
-- **Arquitectura por capas** (MVC + DAO + Services)
-- **Soporte para filtros, ordenamiento y búsquedas**
 
-## 🧱 Endpoints de Productos
-- `GET /api/products` → Lista paginada de productos con filtros y ordenamiento  
-- `GET /api/products/:id` → Obtener producto por ID  
-- `POST /api/products` → Crear nuevo producto (permite subir imagen)  
-- `PUT /api/products/:id` → Actualizar producto existente  
-- `DELETE /api/products/:id` → Eliminar producto por ID  
+- ✅ Patrón Repository (abstracción de datos)
+- ✅ DTOs (seguridad en responses)
+- ✅ Autorización por roles (admin/user)
+- ✅ Checkout con manejo de stock
+- ✅ Tickets de compra automáticos
+- ✅ Recuperación de contraseña por email
+- ✅ Carrito de compras persistente
+- ✅ Validación exhaustiva
 
-### Parámetros opcionales en `GET /api/products`
-- `limit`: Cantidad de productos por página (default 10)
-- `page`: Número de página (default 1)
-- `query`: Filtro por nombre o categoría
-- `sort`: Orden por precio (`asc` o `desc`)
+## 📧 Email
 
-### Ejemplo de respuesta:
-```json
-{
-  "status": "success",
-  "payload": [...],
-  "totalPages": 3,
-  "prevPage": 1,
-  "nextPage": 3,
-  "page": 2,
-  "hasPrevPage": true,
-  "hasNextPage": true,
-  "prevLink": "http://localhost:8080/api/products?page=1",
-  "nextLink": "http://localhost:8080/api/products?page=3"
-}
-🛒 Endpoints de Carrito
-GET /api/carts/:cid → Obtener carrito por ID (con populate)
+Para habilitar password recovery:
 
-POST /api/carts → Crear un carrito vacío
+1. Generar [App Password](https://support.google.com/accounts/answer/185833) en Gmail
+2. Usar como `SMTP_PASSWORD` en `.env`
+3. Los emails se envían automáticamente
 
-POST /api/carts/:cid/products/:pid → Agregar producto al carrito
+## 📝 Licencia
 
-PUT /api/carts/:cid → Reemplazar el contenido completo del carrito
-
-PUT /api/carts/:cid/products/:pid → Actualizar cantidad de un producto
-
-DELETE /api/carts/:cid/products/:pid → Eliminar un producto específico
-
-DELETE /api/carts/:cid → Vaciar todo el carrito
-
-🧭 Vistas Implementadas
-/products → Catálogo con paginación, filtros y ordenamiento
-
-/product/:id → Detalle de producto con botón "Agregar al carrito"
-
-/api/carts/:cid/view → Vista detallada del carrito
-
-🔎 Funcionalidades de Filtrado y Búsqueda
-Filtro por categoría o nombre
-
-Ordenamiento ascendente/descendente por precio
-
-Paginación conservando filtros activos
-
-Navegación fluida entre páginas con parámetros persistentes
-
-⚙️ Tecnologías Utilizadas
-Node.js + Express.js – Servidor backend
-
-MongoDB + Mongoose – Persistencia de datos
-
-Handlebars – Motor de plantillas para vistas
-
-Socket.io – Actualización en tiempo real
-
-Multer – Subida y manejo de imágenes
-
-Method Override – Permitir PUT/DELETE en formularios
-
-📁 Estructura del Proyecto
-css
-
-src/
-├── app.js
-├── config/
-│   └── config.js
-├── controllers/
-│   ├── productController.js
-│   └── cartController.js
-├── dao/
-│   ├── productDao.js
-│   └── cartDao.js
-├── managers/
-│   ├── ProductManager.js
-│   └── CartManager.js
-├── models/
-│   ├── product.model.js
+MIT - Deivry Ramírez 2024
 │   └── cart.model.js
 ├── routes/
 │   ├── product.router.js
