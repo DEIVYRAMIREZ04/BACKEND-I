@@ -14,15 +14,18 @@ class CartDao {
   async findById(id, { populate = false } = {}) {
     try {
       if (!mongoose.isValidObjectId(id)) return null;
-      
+
       const query = Cart.findById(id);
       if (populate) query.populate("products.product");
-      
+
       return await query;
     } catch (error) {
       console.error("Error en DAO.findById:", error);
       throw error;
     }
+  }
+  async create(data = { products: [] }) {
+    return await this.createCart();
   }
 
   async findOne({ populate = false } = {}) {
@@ -38,7 +41,10 @@ class CartDao {
 
   async addProduct(cartId, productId, quantity) {
     try {
-      if (!mongoose.isValidObjectId(cartId) || !mongoose.isValidObjectId(productId)) {
+      if (
+        !mongoose.isValidObjectId(cartId) ||
+        !mongoose.isValidObjectId(productId)
+      ) {
         return null;
       }
 
@@ -46,16 +52,17 @@ class CartDao {
       if (!cart) return null;
 
       const index = cart.products.findIndex(
-        p => p.product?.toString() === productId
+        (p) => p.product?.toString() === productId
       );
 
       if (index >= 0) {
-        cart.products[index].quantity = (cart.products[index].quantity || 0) + quantity;
+        cart.products[index].quantity =
+          (cart.products[index].quantity || 0) + quantity;
       } else {
         cart.products.push({ product: productId, quantity });
       }
 
-      cart.products = cart.products.filter(p => p && p.product);
+      cart.products = cart.products.filter((p) => p && p.product);
       await cart.save();
       return await cart.populate("products.product");
     } catch (error) {
@@ -66,7 +73,10 @@ class CartDao {
 
   async removeProduct(cartId, productId) {
     try {
-      if (!mongoose.isValidObjectId(cartId) || !mongoose.isValidObjectId(productId)) {
+      if (
+        !mongoose.isValidObjectId(cartId) ||
+        !mongoose.isValidObjectId(productId)
+      ) {
         return null;
       }
 
@@ -74,7 +84,7 @@ class CartDao {
       if (!cart) return null;
 
       cart.products = cart.products.filter(
-        p => p.product.toString() !== productId
+        (p) => p.product.toString() !== productId
       );
 
       return await cart.save();
@@ -116,7 +126,10 @@ class CartDao {
 
   async updateQuantity(cartId, productId, quantity) {
     try {
-      if (!mongoose.isValidObjectId(cartId) || !mongoose.isValidObjectId(productId)) {
+      if (
+        !mongoose.isValidObjectId(cartId) ||
+        !mongoose.isValidObjectId(productId)
+      ) {
         return null;
       }
 
@@ -124,7 +137,7 @@ class CartDao {
       if (!cart) return null;
 
       const index = cart.products.findIndex(
-        p => p.product.toString() === productId
+        (p) => p.product.toString() === productId
       );
 
       if (index < 0) return null;

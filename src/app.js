@@ -10,7 +10,6 @@ const cartsRouter = require("./routes/cart.router");
 const apiRouter = require("./routes/api.router");
 const initSockets = require("./sockets");
 const { MONGO_URI, paths } = require("./config/config");
-const productService = require("./services/productService");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const app = express();

@@ -70,7 +70,7 @@ class ProductController {
       res.json({
         status: "success",
         message: "Productos paginados obtenidos correctamente",
-        payload: products.map(p => ProductDTO.public(p)),
+        payload: products.docs.map(p => ProductDTO.public(p)),
         totalPages,
         prevPage,
         nextPage,

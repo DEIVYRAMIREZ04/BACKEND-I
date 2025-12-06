@@ -1,13 +1,3 @@
-/**
- * RepositoryFactory - Factory para crear instancias de Repositories
- * Centraliza la inyección de dependencias (Repositories + DAOs)
- * 
- * PATRÓN FACTORY: Proporciona un punto único de creación de objetos
- * Beneficios:
- * - Fácil de cambiar implementaciones
- * - Centraliza la configuración
- * - Facilita testing con mocks
- */
 
 const UserRepository = require("./UserRepository");
 const ProductRepository = require("./ProductRepository");
